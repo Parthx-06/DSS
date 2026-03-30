@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI PDF Summarizer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins', sans-serif;
+
+scroll-behavior:smooth;
+
+transition:all 0.3s ease;
+}
+
+
+body{
+height:100vh;
+background:linear-gradient(135deg,#667eea,#764ba2,#6dd5ed,#2193b0);
+background-size:400% 400%;
+animation:gradientMove 50s ease infinite;
+}
+
+@keyframes gradientMove{
+0%{
+background-position:0% 50%;
+}
+
+50%{
+background-position:100% 50%;
+}
+
+100%{
+background-position:0% 50%;
+}
+}
+
+/* Glass Container */
+
+.container{
+max-width:700px;
+width:90%;
+padding:40px;
+
+border-radius:25px;
+
+background:rgba(255,255,255,0.15);
+backdrop-filter:blur(20px);
+
+box-shadow:0 15px 35px rgba(0,0,0,0.25);
+
+color:white;
+text-align:center;
+
+margin:auto;
+margin-top:120px;
+margin-bottom:120px;
+
+animation:fadeIn 1s ease;
+
+transition:transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover effect */
+
+.container:hover{
+transform:translateY(-8px);
+box-shadow:0 25px 45px rgba(0,0,0,0.35);
+}
+
+/* Animation */
+
+@keyframes fadeIn{
+0%{
+opacity:0;
+transform:translateY(30px);
+}
+
+100%{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+/* Heading */
+
+h1{
+margin-bottom:20px;
+font-weight:700;
+letter-spacing:2px;
+font-size:2.5rem;
+
+/* Gradient text */
+background:linear-gradient(180deg,#ff7eb3,#ff758c,#667eea,#764ba2);
+background-size:300%;
+
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+
+/* animation */
+opacity:0;
+transform:translateY(-40px);
+
+animation:fadeSlide 1s ease forwards;
+}
+
+/* slide animation */
+
+@keyframes fadeSlide{
+0%{
+opacity:0;
+transform:translateY(-40px);
+}
+
+100%{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+/* moving gradient */
+
+@keyframes gradientMove{
+0%{
+background-position:0%;
+}
+
+100%{
+background-position:300%;
+}
+}
+/* Upload Box */
+
+.upload-box{
+border:2px dashed rgba(255,255,255,0.6);
+padding:40px;
+border-radius:15px;
+
+margin-bottom:40px;
+
+cursor:pointer;
+
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(10px);
+
+transition:all 0.3s ease;
+
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+}
+
+/* Hover Effect */
+
+.upload-box:hover{
+background:rgba(255,255,255,0.18);
+border-color:white;
+
+transform:scale(1.03);
+
+box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+/* Hidden File Input */
+
+input[type=file]{
+display:none;
+}
+
+/* Button */
+
+button{
+padding:12px 28px;
+font-size:16px;
+font-weight:500;
+
+border:none;
+border-radius:30px;
+
+background:linear-gradient(135deg,#ff7eb3,#ff4e91);
+
+color:white;
+
+cursor:pointer;
+
+transition:all 0.3s ease;
+
+box-shadow:0 8px 20px rgba(255,78,145,0.4);
+
+margin-top:20px;
+}
+
+/* Hover Effect */
+
+button:hover{
+transform:translateY(-3px) scale(1.05);
+
+box-shadow:0 12px 30px rgba(255,78,145,0.6);
+
+background:linear-gradient(135deg,#ff4e91,#ff2e7a);
+}
+
+/* Click Effect */
+
+button:active{
+transform:scale(0.95);
+box-shadow:0 5px 15px rgba(255,78,145,0.3);
+}
+
+/* Summary box */
+
+.summary-box{
+margin-top:30px;
+width:100%;
+animation:fadeUp 1s ease;
+}
+
+/* Textarea Styling */
+
+textarea{
+width:100%;
+min-height:300px;
+
+border:none;
+border-radius:15px;
+
+padding:20px;
+
+font-size:15px;
+line-height:1.6;
+
+resize:none;
+
+background:rgba(255,255,255,0.15);
+backdrop-filter:blur(10px);
+
+color:white;
+
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+
+transition:all 0.3s ease;
+}
+
+/* Hover Effect */
+
+textarea:hover{
+transform:scale(1.01);
+box-shadow:0 15px 35px rgba(0,0,0,0.3);
+}
+
+/* Focus Effect */
+
+textarea:focus{
+outline:none;
+box-shadow:0 0 15px rgba(255,255,255,0.6);
+}
+
+/* Animation */
+
+@keyframes fadeUp{
+0%{
+opacity:0;
+transform:translateY(30px);
+}
+
+100%{
+opacity:1;
+transform:translateY(0);
+}
+}
+/*-----------------------------
+/* Loading Spinner */
+
+/* =========================
+   LOADING SPINNER
+   ========================= */
+
+.loader{
+width:50px;
+height:50px;
+
+border:5px solid rgba(255,255,255,0.2);
+border-top:5px solid #ff7eb3;
+border-right:5px solid #ff4e91;
+
+border-radius:50%;
+
+margin:40px auto;
+
+display:none;
+
+animation:spin 0.8s linear infinite, glowPulse 1.5s ease-in-out infinite;
+
+box-shadow:0 0 20px rgba(255,126,179,0.6);
+}
+
+
+/* =========================
+   FLOATING SMALL BUTTON
+   ========================= */
+
+.small-btn{
+position:absolute;
+
+top:20px;
+right:20px;
+
+padding:8px 16px;
+
+font-size:13px;
+font-weight:500;
+
+border:none;
+border-radius:25px;
+
+background:linear-gradient(135deg,#ff7eb3,#ff4e91);
+
+color:white;
+
+cursor:pointer;
+
+transition:all 0.3s ease;
+
+box-shadow:0 6px 18px rgba(255,78,145,0.4);
+}
+
+.small-btn:hover{
+transform:translateY(-3px) scale(1.08);
+
+box-shadow:0 12px 30px rgba(255,78,145,0.7);
+}
+
+.small-btn:active{
+transform:scale(0.95);
+}
+
+
+/* =========================
+   NAVBAR
+   ========================= */
+
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+padding:16px 35px;
+
+background:rgba(30,41,59,0.75);
+backdrop-filter:blur(15px);
+
+color:white;
+
+box-shadow:0 8px 25px rgba(0,0,0,0.35);
+
+animation:fadeIn 0.8s ease;
+}
+
+
+/* =========================
+   DASHBOARD BUTTON
+   ========================= */
+
+.dashboard-btn{
+background:linear-gradient(135deg,#3b82f6,#2563eb);
+
+color:white;
+
+border:none;
+
+padding:10px 20px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+font-size:14px;
+font-weight:500;
+
+transition:all 0.3s ease;
+
+box-shadow:0 6px 20px rgba(59,130,246,0.5);
+}
+
+.dashboard-btn:hover{
+transform:translateY(-3px) scale(1.05);
+
+box-shadow:0 12px 30px rgba(59,130,246,0.7);
+}
+
+.dashboard-btn:active{
+transform:scale(0.96);
+}
+
+
+/* =========================
+   SPINNER ANIMATION
+   ========================= */
+
+@keyframes spin{
+0%{
+transform:rotate(0deg);
+}
+
+100%{
+transform:rotate(360deg);
+}
+}
+
+
+/* =========================
+   GLOW PULSE EFFECT
+   ========================= */
+
+@keyframes glowPulse{
+0%{
+box-shadow:0 0 10px rgba(255,126,179,0.4);
+}
+
+50%{
+box-shadow:0 0 25px rgba(255,126,179,0.9);
+}
+
+100%{
+box-shadow:0 0 10px rgba(255,126,179,0.4);
+}
+}
+
+
+/* =========================
+   FADE IN ANIMATION
+   ========================= */
+
+@keyframes fadeIn{
+0%{
+opacity:0;
+transform:translateY(30px);
+}
+
+100%{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1> NEXT CORE AI </h1>
+<h3> specially Build to analyze how the bussiness is growing the market trend !!! </h3>
+
+<div class="navbar">
+    <h2 class="logo">AI Analytics</h2>
+
+    <a href="dashboard.html">
+        <button class="dashboard-btn">CALCULATE STOCKS !!!!</button>
+    </a>
+</div>
+
+<div class="container">
+
+<h1>AI PDF Summarizer</h1>
+<p>Upload a PDF and get an instant AI-generated summary</p>
+
+<br>
+
+<form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+
+<label class="upload-box">
+
+📄 Drag & Drop PDF or Click to Upload
+
+<input type="file" name="pdf" required>
+
+</label>
+
+<br>
+
+<button type="submit">Generate Summary</button>
+
+</form>
+
+<div class="loader" id="loader"></div>
+
+{% if summary %}
+
+<div class="summary-box">
+
+<h3>Generated Summary</h3>
+
+<textarea readonly>{{summary}}</textarea>
+
+</div>
+
+{% endif %}
+
+
+<a href="https://www.freeconvert.com/csv-to-pdf">
+<button class="small-btn">CSV TO PDF </button>
+</a>
+
+</div>
+
+<script>
+
+function showLoader(){
+document.getElementById("loader").style.display="block";
+}
+
+</script>
+
+</body>
+</html>

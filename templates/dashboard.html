@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manufacturing Decision Support System</title>
+    <style>
+        /* ----- GLOBAL RESET & BASE ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ----- MAIN CONTAINER ----- */
+        .dashboard {
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        /* ----- HEADER ----- */
+        .app-header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .app-header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #1e3a5f;
+            letter-spacing: -0.02em;
+        }
+
+        .app-header p {
+            color: #4a5f7a;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0.5rem auto 0;
+        }
+
+        /* ----- CARD GRID ----- */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        /* ----- CARD STYLES ----- */
+        .card {
+            background: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -8px rgba(0, 32, 64, 0.15);
+            padding: 2rem 1.8rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+            backdrop-filter: blur(2px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 28px 40px -12px rgba(0, 40, 80, 0.25);
+        }
+
+        .card h2 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2::before {
+            content: '⚙️';
+            font-size: 1.8rem;
+        }
+
+        .card .subhead {
+            color: #2e4a6e;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+            border-left: 4px solid #4f9bd8;
+            background: #f0f7ff;
+            padding: 0.75rem 1rem;
+            border-radius: 0 1rem 1rem 0;
+        }
+
+        /* ----- FORM ELEMENTS ----- */
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #1e3a5f;
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.3px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #e2eaf2;
+            border-radius: 1.2rem;
+            font-size: 1rem;
+            background: #ffffff;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #2c7be0;
+            box-shadow: 0 0 0 4px rgba(44, 123, 224, 0.15);
+        }
+
+        /* ----- BUTTON ----- */
+        .btn {
+            width: 100%;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 3rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin: 0.5rem 0 1rem;
+            box-shadow: 0 8px 18px -6px #1e3a5f80;
+            letter-spacing: 0.3px;
+        }
+
+        .btn:hover {
+            background: #143048;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        /* ----- RESULTS AREA ----- */
+        .results {
+            background: #ecf3fa;
+            border-radius: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            margin-top: 0.5rem;
+            border: 2px solid #c9ddec;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px dashed #b0c8dd;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: #1f3a57;
+            font-size: 0.95rem;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #1e3a5f;
+            font-size: 1.3rem;
+            background: white;
+            padding: 0.2rem 1.2rem;
+            border-radius: 3rem;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .footnote {
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: #5d738e;
+            text-align: center;
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            .card { padding: 1.5rem; }
+            .module-grid { gap: 1.5rem; }
+            .result-value { font-size: 1.1rem; padding: 0.2rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header class="app-header">
+            <h1>🏭 Manufacturing Decision Support System</h1>
+            <p>Optimise inventory, production, and costing with data‑driven tools.</p>
+        </header>
+
+        <div class="module-grid">
+            <!-- ========== EOQ CALCULATOR ========== -->
+            <div class="card">
+                <h2>EOQ Calculator</h2>
+                <div class="subhead">Economic order quantity – minimise total cost</div>
+                <div class="input-group">
+                    <label for="eoqDemand">Annual demand (units)</label>
+                    <input type="number" id="eoqDemand" step="1" min="1" value="10000">
+                </div>
+                <div class="input-group">
+                    <label for="eoqOrderCost">Ordering cost per order ($)</label>
+                    <input type="number" id="eoqOrderCost" step="0.1" min="0.1" value="100">
+                </div>
+                <div class="input-group">
+                    <label for="eoqHoldingCost">Holding cost per unit/year ($)</label>
+                    <input type="number" id="eoqHoldingCost" step="0.1" min="0.1" value="2">
+                </div>
+                <button class="btn" id="calcEoqBtn">Calculate EOQ</button>
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">📦 Optimal order qty</span>
+                        <span class="result-value" id="eoqResult">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">🔄 Orders per year</span>
+                        <span class="result-value" id="eoqOrders">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">💰 Total annual cost</span>
+                        <span class="result-value" id="eoqCost">$0</span>
+                    </div>
+                </div>
+                <div class="footnote">EOQ = √(2DS/H)</div>
+            </div>
+
+            <!-- ========== REORDER POINT ========== -->
+            <div class="card">
+                <h2>Reorder Point</h2>
+                <div class="subhead">Safety stock & reorder level</div>
+                <div class="input-group">
+                    <label for="ropDemand">Average demand (units/day)</label>
+                    <input type="number" id="ropDemand" step="0.1" min="0.1" value="50">
+                </div>
+                <div class="input-group">
+                    <label for="ropStd">Demand std deviation (units/day)</label>
+                    <input type="number" id="ropStd" step="0.1" min="0" value="8">
+                </div>
+                <div class="input-group">
+                    <label for="ropLead">Lead time (days)</label>
+                    <input type="number" id="ropLead" step="0.1" min="0.1" value="5">
+                </div>
+                <div class="input-group">
+                    <label for="ropService">Service level (%)</label>
+                    <input type="number" id="ropService" step="0.1" min="50" max="99.9" value="95">
+                </div>
+                <button class="btn" id="calcRopBtn">Calculate Reorder Point</button>
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">🛡️ Safety stock</span>
+                        <span class="result-value" id="ropSafety">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">📌 Reorder point</span>
+                        <span class="result-value" id="ropPoint">0</span>
+                    </div>
+                </div>
+                <div class="footnote">z-score interpolated for service level</div>
+            </div>
+
+            <!-- ========== BREAK‑EVEN ANALYSIS ========== -->
+            <div class="card">
+                <h2>Break‑even Analysis</h2>
+                <div class="subhead">Find volume where profit = 0</div>
+                <div class="input-group">
+                    <label for="beFixed">Fixed costs ($)</label>
+                    <input type="number" id="beFixed" step="1" min="0" value="50000">
+                </div>
+                <div class="input-group">
+                    <label for="beVariable">Variable cost per unit ($)</label>
+                    <input type="number" id="beVariable" step="0.1" min="0" value="30">
+                </div>
+                <div class="input-group">
+                    <label for="bePrice">Selling price per unit ($)</label>
+                    <input type="number" id="bePrice" step="0.1" min="0.1" value="50">
+                </div>
+                <button class="btn" id="calcBeBtn">Calculate BEP</button>
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">📊 BEP (units)</span>
+                        <span class="result-value" id="beUnits">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">💰 BEP (revenue $)</span>
+                        <span class="result-value" id="beRevenue">$0</span>
+                    </div>
+                </div>
+                <div class="footnote">BEP units = Fixed / (Price - Variable)</div>
+            </div>
+
+            <!-- ========== MAKE OR BUY ========== -->
+            <div class="card">
+                <h2>Make or Buy</h2>
+                <div class="subhead">Compare in‑house vs outsourcing</div>
+                <div class="input-group">
+                    <label for="mobMakeFixed">Make fixed cost ($)</label>
+                    <input type="number" id="mobMakeFixed" step="1" min="0" value="20000">
+                </div>
+                <div class="input-group">
+                    <label for="mobMakeVar">Make variable cost per unit ($)</label>
+                    <input type="number" id="mobMakeVar" step="0.1" min="0" value="15">
+                </div>
+                <div class="input-group">
+                    <label for="mobBuyPrice">Buy price per unit ($)</label>
+                    <input type="number" id="mobBuyPrice" step="0.1" min="0" value="20">
+                </div>
+                <div class="input-group">
+                    <label for="mobVolume">Expected annual volume</label>
+                    <input type="number" id="mobVolume" step="1" min="0" value="5000">
+                </div>
+                <button class="btn" id="calcMobBtn">Compare</button>
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">🏭 Make cost</span>
+                        <span class="result-value" id="mobMakeCost">$0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">📦 Buy cost</span>
+                        <span class="result-value" id="mobBuyCost">$0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">✅ Decision</span>
+                        <span class="result-value" id="mobDecision">—</span>
+                    </div>
+                </div>
+                <div class="footnote">Make cost = Fixed + Var×Q ; Buy cost = Price×Q</div>
+            </div>
+
+            <!-- ========== SIMPLE MOVING AVERAGE ========== -->
+            <div class="card">
+                <h2>Demand Forecast (SMA)</h2>
+                <div class="subhead">Simple moving average for next period</div>
+                <div class="input-group">
+                    <label for="smaData">Recent demands (comma separated)</label>
+                    <input type="text" id="smaData" placeholder="e.g., 120,135,128,142" value="120,135,128,142">
+                </div>
+                <div class="input-group">
+                    <label for="smaPeriods">Number of periods to average</label>
+                    <input type="number" id="smaPeriods" min="1" max="12" value="3">
+                </div>
+                <button class="btn" id="calcSmaBtn">Forecast</button>
+                <div class="results">
+                    <div class="result-item">
+                        <span class="result-label">🔮 Next period forecast</span>
+                        <span class="result-value" id="smaForecast">0</span>
+                    </div>
+                </div>
+                <div class="footnote">Uses last N values; N ≤ number of entries</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ----- EOQ Calculator -----
+            document.getElementById('calcEoqBtn').addEventListener('click', function() {
+                const D = parseFloat(document.getElementById('eoqDemand').value);
+                const S = parseFloat(document.getElementById('eoqOrderCost').value);
+                const H = parseFloat(document.getElementById('eoqHoldingCost').value);
+                if (D > 0 && S > 0 && H > 0) {
+                    const eoq = Math.sqrt((2 * D * S) / H);
+                    const orders = D / eoq;
+                    const total = (eoq / 2) * H + (D / eoq) * S;
+                    document.getElementById('eoqResult').innerText = eoq.toFixed(2);
+                    document.getElementById('eoqOrders').innerText = orders.toFixed(2);
+                    document.getElementById('eoqCost').innerText = '$' + total.toFixed(2);
+                } else alert('Please enter positive numbers.');
+            });
+
+            // ----- Reorder Point with Safety Stock -----
+            document.getElementById('calcRopBtn').addEventListener('click', function() {
+                const d = parseFloat(document.getElementById('ropDemand').value);
+                const sd = parseFloat(document.getElementById('ropStd').value);
+                const lt = parseFloat(document.getElementById('ropLead').value);
+                const sl = parseFloat(document.getElementById('ropService').value) / 100;
+
+                // Approximate z-score (common values)
+                let z;
+                if (sl <= 0.9) z = 1.28;
+                else if (sl <= 0.95) z = 1.28 + (1.645 - 1.28) * ((sl - 0.9) / 0.05);
+                else if (sl <= 0.99) z = 1.645 + (2.33 - 1.645) * ((sl - 0.95) / 0.04);
+                else z = 2.33;
+
+                const safety = z * sd * Math.sqrt(lt);
+                const rop = d * lt + safety;
+                document.getElementById('ropSafety').innerText = safety.toFixed(2);
+                document.getElementById('ropPoint').innerText = rop.toFixed(2);
+            });
+
+            // ----- Break‑even Analysis -----
+            document.getElementById('calcBeBtn').addEventListener('click', function() {
+                const fixed = parseFloat(document.getElementById('beFixed').value);
+                const varCost = parseFloat(document.getElementById('beVariable').value);
+                const price = parseFloat(document.getElementById('bePrice').value);
+                if (price > varCost) {
+                    const beUnits = fixed / (price - varCost);
+                    const beRevenue = beUnits * price;
+                    document.getElementById('beUnits').innerText = beUnits.toFixed(2);
+                    document.getElementById('beRevenue').innerText = '$' + beRevenue.toFixed(2);
+                } else alert('Price must be greater than variable cost.');
+            });
+
+            // ----- Make or Buy -----
+            document.getElementById('calcMobBtn').addEventListener('click', function() {
+                const makeFixed = parseFloat(document.getElementById('mobMakeFixed').value);
+                const makeVar = parseFloat(document.getElementById('mobMakeVar').value);
+                const buyPrice = parseFloat(document.getElementById('mobBuyPrice').value);
+                const volume = parseFloat(document.getElementById('mobVolume').value);
+                if (volume >= 0) {
+                    const makeCost = makeFixed + makeVar * volume;
+                    const buyCost = buyPrice * volume;
+                    document.getElementById('mobMakeCost').innerText = '$' + makeCost.toFixed(2);
+                    document.getElementById('mobBuyCost').innerText = '$' + buyCost.toFixed(2);
+                    const decision = (makeCost < buyCost) ? 'Make' : (buyCost < makeCost) ? 'Buy' : 'Indifferent';
+                    document.getElementById('mobDecision').innerText = decision;
+                } else alert('Volume must be non‑negative.');
+            });
+
+            // ----- Simple Moving Average Forecast -----
+            document.getElementById('calcSmaBtn').addEventListener('click', function() {
+                const dataStr = document.getElementById('smaData').value;
+                const periods = parseInt(document.getElementById('smaPeriods').value);
+                const numbers = dataStr.split(',').map(Number).filter(n => !isNaN(n));
+                if (numbers.length < periods) {
+                    alert(`Need at least ${periods} numbers.`);
+                    return;
+                }
+                const lastN = numbers.slice(-periods);
+                const avg = lastN.reduce((a, b) => a + b, 0) / periods;
+                document.getElementById('smaForecast').innerText = avg.toFixed(2);
+            });
+
+            // Trigger initial calculations for default values
+            window.addEventListener('load', function() {
+                document.getElementById('calcEoqBtn').click();
+                document.getElementById('calcRopBtn').click();
+                document.getElementById('calcBeBtn').click();
+                document.getElementById('calcMobBtn').click();
+                document.getElementById('calcSmaBtn').click();
+            });
+        })();
+    </script>
+</body>
+</html>
