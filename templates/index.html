@@ -1,525 +1,589 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI PDF Summarizer</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
+<title>NEXT CORE AI — Agentic Sales Intelligence</title>
+<meta name="description" content="Autonomous AI-powered sales intelligence platform with CSV analysis, market predictions, and agentic workflows.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Poppins', sans-serif;
-
-scroll-behavior:smooth;
-
-transition:all 0.3s ease;
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM
+   ═══════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg-primary:#0a0e1a;
+  --bg-card:rgba(15,23,42,0.75);
+  --bg-glass:rgba(255,255,255,0.04);
+  --border-glass:rgba(255,255,255,0.08);
+  --text-primary:#f1f5f9;
+  --text-secondary:#94a3b8;
+  --text-muted:#64748b;
+  --accent-indigo:#6366f1;
+  --accent-pink:#ec4899;
+  --accent-cyan:#22d3ee;
+  --accent-green:#34d399;
+  --accent-amber:#fbbf24;
+  --gradient-hero:linear-gradient(135deg,#6366f1 0%,#8b5cf6 25%,#ec4899 50%,#f43f5e 75%,#6366f1 100%);
+  --gradient-card:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(236,72,153,0.05));
+  --shadow-glow:0 0 60px rgba(99,102,241,0.15);
+  --radius-xl:24px;
+  --radius-lg:16px;
+  --radius-md:12px;
 }
-
-
+html{scroll-behavior:smooth;}
 body{
-height:100vh;
-background:linear-gradient(135deg,#667eea,#764ba2,#6dd5ed,#2193b0);
-background-size:400% 400%;
-animation:gradientMove 50s ease infinite;
+  font-family:'Inter',sans-serif;
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  min-height:100vh;
+  overflow-x:hidden;
 }
 
-@keyframes gradientMove{
-0%{
-background-position:0% 50%;
+/* ═══ ANIMATED BG ═══ */
+.bg-mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%,rgba(99,102,241,0.12),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 20%,rgba(236,72,153,0.1),transparent),
+    radial-gradient(ellipse 50% 60% at 50% 80%,rgba(34,211,238,0.08),transparent);
+}
+.orb{
+  position:fixed;border-radius:50%;filter:blur(80px);opacity:.35;z-index:0;
+  animation:orbFloat 20s ease-in-out infinite;
+}
+.orb-1{width:500px;height:500px;background:#6366f1;top:-10%;left:-5%;animation-delay:0s;}
+.orb-2{width:400px;height:400px;background:#ec4899;top:50%;right:-8%;animation-delay:-7s;}
+.orb-3{width:350px;height:350px;background:#22d3ee;bottom:-5%;left:30%;animation-delay:-14s;}
+@keyframes orbFloat{
+  0%,100%{transform:translate(0,0) scale(1);}
+  33%{transform:translate(30px,-40px) scale(1.05);}
+  66%{transform:translate(-20px,30px) scale(0.95);}
 }
 
-50%{
-background-position:100% 50%;
-}
-
-100%{
-background-position:0% 50%;
-}
-}
-
-/* Glass Container */
-
-.container{
-max-width:700px;
-width:90%;
-padding:40px;
-
-border-radius:25px;
-
-background:rgba(255,255,255,0.15);
-backdrop-filter:blur(20px);
-
-box-shadow:0 15px 35px rgba(0,0,0,0.25);
-
-color:white;
-text-align:center;
-
-margin:auto;
-margin-top:120px;
-margin-bottom:120px;
-
-animation:fadeIn 1s ease;
-
-transition:transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Hover effect */
-
-.container:hover{
-transform:translateY(-8px);
-box-shadow:0 25px 45px rgba(0,0,0,0.35);
-}
-
-/* Animation */
-
-@keyframes fadeIn{
-0%{
-opacity:0;
-transform:translateY(30px);
-}
-
-100%{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-/* Heading */
-
-h1{
-margin-bottom:20px;
-font-weight:700;
-letter-spacing:2px;
-font-size:2.5rem;
-
-/* Gradient text */
-background:linear-gradient(180deg,#ff7eb3,#ff758c,#667eea,#764ba2);
-background-size:300%;
-
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-
-/* animation */
-opacity:0;
-transform:translateY(-40px);
-
-animation:fadeSlide 1s ease forwards;
-}
-
-/* slide animation */
-
-@keyframes fadeSlide{
-0%{
-opacity:0;
-transform:translateY(-40px);
-}
-
-100%{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-/* moving gradient */
-
-@keyframes gradientMove{
-0%{
-background-position:0%;
-}
-
-100%{
-background-position:300%;
-}
-}
-/* Upload Box */
-
-.upload-box{
-border:2px dashed rgba(255,255,255,0.6);
-padding:40px;
-border-radius:15px;
-
-margin-bottom:40px;
-
-cursor:pointer;
-
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(10px);
-
-transition:all 0.3s ease;
-
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-}
-
-/* Hover Effect */
-
-.upload-box:hover{
-background:rgba(255,255,255,0.18);
-border-color:white;
-
-transform:scale(1.03);
-
-box-shadow:0 10px 25px rgba(0,0,0,0.25);
-}
-
-/* Hidden File Input */
-
-input[type=file]{
-display:none;
-}
-
-/* Button */
-
-button{
-padding:12px 28px;
-font-size:16px;
-font-weight:500;
-
-border:none;
-border-radius:30px;
-
-background:linear-gradient(135deg,#ff7eb3,#ff4e91);
-
-color:white;
-
-cursor:pointer;
-
-transition:all 0.3s ease;
-
-box-shadow:0 8px 20px rgba(255,78,145,0.4);
-
-margin-top:20px;
-}
-
-/* Hover Effect */
-
-button:hover{
-transform:translateY(-3px) scale(1.05);
-
-box-shadow:0 12px 30px rgba(255,78,145,0.6);
-
-background:linear-gradient(135deg,#ff4e91,#ff2e7a);
-}
-
-/* Click Effect */
-
-button:active{
-transform:scale(0.95);
-box-shadow:0 5px 15px rgba(255,78,145,0.3);
-}
-
-/* Summary box */
-
-.summary-box{
-margin-top:30px;
-width:100%;
-animation:fadeUp 1s ease;
-}
-
-/* Textarea Styling */
-
-textarea{
-width:100%;
-min-height:300px;
-
-border:none;
-border-radius:15px;
-
-padding:20px;
-
-font-size:15px;
-line-height:1.6;
-
-resize:none;
-
-background:rgba(255,255,255,0.15);
-backdrop-filter:blur(10px);
-
-color:white;
-
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-
-transition:all 0.3s ease;
-}
-
-/* Hover Effect */
-
-textarea:hover{
-transform:scale(1.01);
-box-shadow:0 15px 35px rgba(0,0,0,0.3);
-}
-
-/* Focus Effect */
-
-textarea:focus{
-outline:none;
-box-shadow:0 0 15px rgba(255,255,255,0.6);
-}
-
-/* Animation */
-
-@keyframes fadeUp{
-0%{
-opacity:0;
-transform:translateY(30px);
-}
-
-100%{
-opacity:1;
-transform:translateY(0);
-}
-}
-/*-----------------------------
-/* Loading Spinner */
-
-/* =========================
-   LOADING SPINNER
-   ========================= */
-
-.loader{
-width:50px;
-height:50px;
-
-border:5px solid rgba(255,255,255,0.2);
-border-top:5px solid #ff7eb3;
-border-right:5px solid #ff4e91;
-
-border-radius:50%;
-
-margin:40px auto;
-
-display:none;
-
-animation:spin 0.8s linear infinite, glowPulse 1.5s ease-in-out infinite;
-
-box-shadow:0 0 20px rgba(255,126,179,0.6);
-}
-
-
-/* =========================
-   FLOATING SMALL BUTTON
-   ========================= */
-
-.small-btn{
-position:absolute;
-
-top:20px;
-right:20px;
-
-padding:8px 16px;
-
-font-size:13px;
-font-weight:500;
-
-border:none;
-border-radius:25px;
-
-background:linear-gradient(135deg,#ff7eb3,#ff4e91);
-
-color:white;
-
-cursor:pointer;
-
-transition:all 0.3s ease;
-
-box-shadow:0 6px 18px rgba(255,78,145,0.4);
-}
-
-.small-btn:hover{
-transform:translateY(-3px) scale(1.08);
-
-box-shadow:0 12px 30px rgba(255,78,145,0.7);
-}
-
-.small-btn:active{
-transform:scale(0.95);
-}
-
-
-/* =========================
-   NAVBAR
-   ========================= */
-
+/* ═══ NAVBAR ═══ */
 .navbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-
-padding:16px 35px;
-
-background:rgba(30,41,59,0.75);
-backdrop-filter:blur(15px);
-
-color:white;
-
-box-shadow:0 8px 25px rgba(0,0,0,0.35);
-
-animation:fadeIn 0.8s ease;
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 40px;
+  background:rgba(10,14,26,0.7);
+  backdrop-filter:blur(20px)saturate(180%);
+  border-bottom:1px solid var(--border-glass);
+}
+.nav-logo{
+  font-size:1.3rem;font-weight:800;
+  background:var(--gradient-hero);background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer{
+  0%,100%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+}
+.nav-links{display:flex;gap:12px;}
+.nav-btn{
+  padding:10px 22px;border-radius:50px;border:none;
+  font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);
+  text-decoration:none;
+}
+.nav-btn-outline{
+  background:transparent;color:var(--text-primary);
+  border:1px solid var(--border-glass);
+}
+.nav-btn-outline:hover{
+  background:rgba(255,255,255,0.06);border-color:var(--accent-indigo);
+  transform:translateY(-2px);
+}
+.nav-btn-primary{
+  background:linear-gradient(135deg,var(--accent-indigo),var(--accent-pink));
+  color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.3);
+}
+.nav-btn-primary:hover{
+  transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,0.5);
 }
 
-
-/* =========================
-   DASHBOARD BUTTON
-   ========================= */
-
-.dashboard-btn{
-background:linear-gradient(135deg,#3b82f6,#2563eb);
-
-color:white;
-
-border:none;
-
-padding:10px 20px;
-
-border-radius:8px;
-
-cursor:pointer;
-
-font-size:14px;
-font-weight:500;
-
-transition:all 0.3s ease;
-
-box-shadow:0 6px 20px rgba(59,130,246,0.5);
+/* ═══ HERO ═══ */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:120px 20px 60px;text-align:center;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 20px;border-radius:50px;
+  background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);
+  font-size:.8rem;color:var(--accent-indigo);font-weight:600;
+  margin-bottom:24px;
+  animation:fadeUp .8s ease both;
+}
+.hero-badge .pulse{
+  width:8px;height:8px;border-radius:50%;background:var(--accent-green);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.5);}}
+.hero h1{
+  font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;
+  line-height:1.1;max-width:900px;
+  background:linear-gradient(135deg,#fff 0%,#e2e8f0 40%,#6366f1 80%,#ec4899 100%);
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:fadeUp .8s ease .1s both,shimmer 4s ease-in-out infinite;
+}
+.hero p{
+  font-size:1.15rem;color:var(--text-secondary);max-width:650px;
+  line-height:1.7;margin-top:20px;
+  animation:fadeUp .8s ease .2s both;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(30px);}
+  to{opacity:1;transform:translateY(0);}
 }
 
-.dashboard-btn:hover{
-transform:translateY(-3px) scale(1.05);
+/* ═══ UPLOAD SECTION ═══ */
+.upload-section{
+  position:relative;z-index:1;
+  max-width:700px;width:90%;margin:-20px auto 60px;
+  animation:fadeUp .8s ease .3s both;
+}
+.upload-card{
+  background:var(--bg-card);
+  border:1px solid var(--border-glass);
+  border-radius:var(--radius-xl);
+  padding:40px;
+  backdrop-filter:blur(20px);
+  box-shadow:var(--shadow-glow);
+}
+.upload-card h2{
+  font-size:1.5rem;font-weight:700;margin-bottom:6px;
+}
+.upload-card .subtitle{
+  color:var(--text-secondary);font-size:.9rem;margin-bottom:28px;
+}
+.drop-zone{
+  border:2px dashed rgba(99,102,241,0.3);
+  border-radius:var(--radius-lg);
+  padding:50px 20px;
+  text-align:center;cursor:pointer;
+  transition:all .3s;
+  background:rgba(99,102,241,0.03);
+  position:relative;overflow:hidden;
+}
+.drop-zone:hover,.drop-zone.dragover{
+  border-color:var(--accent-indigo);
+  background:rgba(99,102,241,0.08);
+  transform:scale(1.01);
+}
+.drop-zone .icon{font-size:3rem;margin-bottom:12px;}
+.drop-zone .text{color:var(--text-secondary);font-size:.95rem;}
+.drop-zone .text span{color:var(--accent-indigo);font-weight:600;cursor:pointer;}
+.drop-zone input{display:none;}
+.file-name{
+  margin-top:12px;padding:10px 16px;
+  background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);
+  border-radius:var(--radius-md);color:var(--accent-green);
+  font-size:.85rem;display:none;
+}
+.file-name.visible{display:flex;align-items:center;gap:8px;}
 
-box-shadow:0 12px 30px rgba(59,130,246,0.7);
+.actions-row{
+  display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;
+}
+.btn{
+  flex:1;min-width:200px;padding:14px 28px;border-radius:50px;
+  border:none;font-family:'Inter',sans-serif;
+  font-size:.9rem;font-weight:700;cursor:pointer;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent-indigo),#8b5cf6);
+  color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.3);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(99,102,241,0.5);}
+.btn-primary:active{transform:scale(.97);}
+.btn-secondary{
+  background:rgba(255,255,255,0.05);color:var(--text-primary);
+  border:1px solid var(--border-glass);
+}
+.btn-secondary:hover{background:rgba(255,255,255,0.08);transform:translateY(-2px);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
+
+/* ═══ STATUS BAR ═══ */
+.status-bar{
+  margin-top:24px;padding:0;
+  border-radius:var(--radius-lg);overflow:hidden;
+  display:none;
+}
+.status-bar.visible{display:block;}
+.status-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;
+  background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+}
+.status-header .title{font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:8px;}
+.status-header .badge{
+  padding:4px 12px;border-radius:50px;font-size:.75rem;font-weight:600;
+}
+.badge-running{background:rgba(251,191,36,0.15);color:var(--accent-amber);}
+.badge-completed{background:rgba(52,211,153,0.15);color:var(--accent-green);}
+.badge-failed{background:rgba(239,68,68,0.15);color:#ef4444;}
+
+.steps-list{
+  padding:0;
+  background:rgba(15,23,42,0.4);
+  border:1px solid var(--border-glass);border-top:none;
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+}
+.step-item{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:background .3s;
+}
+.step-item:last-child{border-bottom:none;}
+.step-item:hover{background:rgba(255,255,255,0.02);}
+.step-icon{font-size:1.3rem;width:28px;text-align:center;}
+.step-info{flex:1;}
+.step-name{font-weight:600;font-size:.88rem;}
+.step-result{font-size:.78rem;color:var(--text-muted);margin-top:2px;}
+.step-status{
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;
+}
+.step-pending{border:2px solid var(--text-muted);color:var(--text-muted);}
+.step-active{border:2px solid var(--accent-amber);color:var(--accent-amber);animation:pulse 1.5s infinite;}
+.step-done{background:var(--accent-green);color:#000;}
+.step-warn{background:var(--accent-amber);color:#000;}
+
+/* ═══ FEATURES GRID ═══ */
+.features{
+  position:relative;z-index:1;
+  max-width:1200px;margin:0 auto 80px;padding:0 20px;
+}
+.features h2{
+  text-align:center;font-size:2rem;margin-bottom:40px;
+  animation:fadeUp .8s ease both;
+}
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;
+}
+.feature-card{
+  background:var(--bg-card);border:1px solid var(--border-glass);
+  border-radius:var(--radius-xl);padding:32px;
+  backdrop-filter:blur(12px);
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  animation:fadeUp .8s ease both;
+}
+.feature-card:nth-child(1){animation-delay:.1s;}
+.feature-card:nth-child(2){animation-delay:.15s;}
+.feature-card:nth-child(3){animation-delay:.2s;}
+.feature-card:nth-child(4){animation-delay:.25s;}
+.feature-card:nth-child(5){animation-delay:.3s;}
+.feature-card:nth-child(6){animation-delay:.35s;}
+.feature-card:nth-child(7){animation-delay:.4s;}
+.feature-card:nth-child(8){animation-delay:.45s;}
+.feature-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(99,102,241,0.25);
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+}
+.feature-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;margin-bottom:16px;
+}
+.fi-indigo{background:rgba(99,102,241,0.12);}
+.fi-pink{background:rgba(236,72,153,0.12);}
+.fi-cyan{background:rgba(34,211,238,0.12);}
+.fi-green{background:rgba(52,211,153,0.12);}
+.fi-amber{background:rgba(251,191,36,0.12);}
+.fi-red{background:rgba(239,68,68,0.12);}
+.feature-card h3{font-size:1.05rem;font-weight:700;margin-bottom:8px;}
+.feature-card p{font-size:.85rem;color:var(--text-secondary);line-height:1.6;}
+
+/* ═══ FOOTER ═══ */
+.footer{
+  position:relative;z-index:1;
+  text-align:center;padding:40px 20px;
+  border-top:1px solid var(--border-glass);
+  color:var(--text-muted);font-size:.8rem;
 }
 
-.dashboard-btn:active{
-transform:scale(0.96);
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:600px){
+  .navbar{padding:12px 20px;}
+  .hero h1{font-size:2rem;}
+  .upload-card{padding:24px;}
+  .actions-row{flex-direction:column;}
+  .btn{min-width:auto;}
 }
-
-
-/* =========================
-   SPINNER ANIMATION
-   ========================= */
-
-@keyframes spin{
-0%{
-transform:rotate(0deg);
-}
-
-100%{
-transform:rotate(360deg);
-}
-}
-
-
-/* =========================
-   GLOW PULSE EFFECT
-   ========================= */
-
-@keyframes glowPulse{
-0%{
-box-shadow:0 0 10px rgba(255,126,179,0.4);
-}
-
-50%{
-box-shadow:0 0 25px rgba(255,126,179,0.9);
-}
-
-100%{
-box-shadow:0 0 10px rgba(255,126,179,0.4);
-}
-}
-
-
-/* =========================
-   FADE IN ANIMATION
-   ========================= */
-
-@keyframes fadeIn{
-0%{
-opacity:0;
-transform:translateY(30px);
-}
-
-100%{
-opacity:1;
-transform:translateY(0);
-}
-}
-
 </style>
-
 </head>
-
 <body>
 
-<h1> NEXT CORE AI </h1>
-<h3> specially Build to analyze how the bussiness is growing the market trend !!! </h3>
+<div class="bg-mesh"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-<div class="navbar">
-    <h2 class="logo">AI Analytics</h2>
+<!-- ═══ NAVBAR ═══ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-logo">NEXT CORE AI</div>
+  <div class="nav-links">
+    <a href="/dashboard" class="nav-btn nav-btn-outline">📊 Dashboard</a>
+    <a href="#upload" class="nav-btn nav-btn-primary">🚀 Get Started</a>
+  </div>
+</nav>
 
-    <a href="dashboard.html">
-        <button class="dashboard-btn">CALCULATE STOCKS !!!!</button>
-    </a>
-</div>
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="pulse"></span>
+    Autonomous Agentic Pipeline v2.0
+  </div>
+  <h1>AI-Powered Sales Intelligence Platform</h1>
+  <p>Upload your dataset, and our autonomous AI agent will analyze patterns, predict market trends using real-time news, alert suppliers, and email actionable reports — all in one click.</p>
+</section>
 
-<div class="container">
+<!-- ═══ UPLOAD SECTION ═══ -->
+<section class="upload-section" id="upload">
+  <div class="upload-card">
+    <h2>📂 Upload Your Data</h2>
+    <p class="subtitle">Drop a CSV file to begin the agentic analysis pipeline</p>
 
-<h1>AI PDF Summarizer</h1>
-<p>Upload a PDF and get an instant AI-generated summary</p>
+    <div class="drop-zone" id="dropZone">
+      <div class="icon">📄</div>
+      <div class="text">Drag & drop your CSV here or <span onclick="document.getElementById('fileInput').click()">browse files</span></div>
+      <input type="file" id="fileInput" accept=".csv">
+    </div>
+    <div class="file-name" id="fileName">
+      <span>📎</span>
+      <span id="fileNameText"></span>
+    </div>
 
-<br>
+    <div class="actions-row">
+      <button class="btn btn-primary" id="runPipelineBtn" onclick="runPipeline()">
+        <span id="pipelineBtnIcon">🤖</span>
+        <span id="pipelineBtnText">Run Agentic Pipeline</span>
+      </button>
+      <button class="btn btn-secondary" onclick="useSampleData()">
+        📊 Use Sample Data
+      </button>
+    </div>
 
-<form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+    <!-- PIPELINE STATUS -->
+    <div class="status-bar" id="statusBar">
+      <div class="status-header">
+        <div class="title">🤖 Agentic Pipeline</div>
+        <span class="badge" id="statusBadge">Idle</span>
+      </div>
+      <div class="steps-list" id="stepsList"></div>
+    </div>
+  </div>
+</section>
 
-<label class="upload-box">
+<!-- ═══ FEATURES ═══ -->
+<section class="features">
+  <h2>Agentic Workflow Features</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-indigo">📊</div>
+      <h3>CSV Feature Extraction</h3>
+      <p>Auto-detects columns, calculates statistics, correlations, growth rates, and product performance scorecards from your data.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-pink">📈</div>
+      <h3>10 Interactive Charts</h3>
+      <p>Bar, line, pie, radar, doughnut, stacked, and area charts — auto-generated from your dataset with gradient fills and animations.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-cyan">📰</div>
+      <h3>Market News Intelligence</h3>
+      <p>Fetches live news for each product via News API, correlates with sales data for contextual market predictions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">🤖</div>
+      <h3>AI Market Predictions</h3>
+      <p>Gemini AI combines your data + news to predict which products will sell more and which will decline — with confidence scores.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-amber">🔍</div>
+      <h3>Anomaly Detection</h3>
+      <p>Automatically identifies growth spikes, profit margin drops, and high-variability products that need attention.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-red">📦</div>
+      <h3>Supplier Auto-Alerts</h3>
+      <p>If sales are predicted to spike — automatically emails suppliers to increase stock. If declining — reduce orders.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-indigo">📧</div>
+      <h3>Manager Email Reports</h3>
+      <p>Generates beautiful HTML reports with KPIs, predictions, anomalies, and recommendations — sent directly to your manager.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-pink">🔮</div>
+      <h3>What-If Scenarios</h3>
+      <p>Ask "What if prices increase 20%?" and the AI predicts the impact on each product's sales and profitability.</p>
+    </div>
+  </div>
+</section>
 
-📄 Drag & Drop PDF or Click to Upload
-
-<input type="file" name="pdf" required>
-
-</label>
-
-<br>
-
-<button type="submit">Generate Summary</button>
-
-</form>
-
-<div class="loader" id="loader"></div>
-
-{% if summary %}
-
-<div class="summary-box">
-
-<h3>Generated Summary</h3>
-
-<textarea readonly>{{summary}}</textarea>
-
-</div>
-
-{% endif %}
-
-
-<a href="https://www.freeconvert.com/csv-to-pdf">
-<button class="small-btn">CSV TO PDF </button>
-</a>
-
-</div>
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <p>NEXT CORE AI — Autonomous Sales Intelligence Platform · Built with Gemini AI + News API</p>
+</footer>
 
 <script>
+/* ═══════════════════════════════════════════════
+   JAVASCRIPT
+   ═══════════════════════════════════════════════ */
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileName = document.getElementById('fileName');
+const fileNameText = document.getElementById('fileNameText');
+let uploadedFile = null;
 
-function showLoader(){
-document.getElementById("loader").style.display="block";
+// Drag & drop
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) handleFile(file);
+});
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  uploadedFile = file;
+  fileNameText.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+  fileName.classList.add('visible');
 }
 
-</script>
+async function uploadFile() {
+  if (!uploadedFile) return true; // use default
+  const form = new FormData();
+  form.append('file', uploadedFile);
+  const resp = await fetch('/upload', { method: 'POST', body: form });
+  return resp.ok;
+}
 
+function useSampleData() {
+  uploadedFile = null;
+  fileNameText.textContent = 'sales.csv (sample data)';
+  fileName.classList.add('visible');
+  showNotification('Using built-in sample data (sales.csv)', 'info');
+}
+
+/* ═══ RUN PIPELINE ═══ */
+async function runPipeline() {
+  const btn = document.getElementById('runPipelineBtn');
+  const btnIcon = document.getElementById('pipelineBtnIcon');
+  const btnText = document.getElementById('pipelineBtnText');
+  const statusBar = document.getElementById('statusBar');
+  const statusBadge = document.getElementById('statusBadge');
+  const stepsList = document.getElementById('stepsList');
+
+  btn.disabled = true;
+  btnIcon.textContent = '⏳';
+  btnText.textContent = 'Running Pipeline...';
+  statusBar.classList.add('visible');
+  statusBadge.textContent = 'Running';
+  statusBadge.className = 'badge badge-running';
+
+  // Show placeholder steps
+  const defaultSteps = [
+    { step:1, name:'Analyzing CSV Data', icon:'📊', status:'pending' },
+    { step:2, name:'Generating 10 Charts', icon:'📈', status:'pending' },
+    { step:3, name:'Detecting Anomalies', icon:'🔍', status:'pending' },
+    { step:4, name:'Fetching Market News', icon:'📰', status:'pending' },
+    { step:5, name:'Running AI Predictions', icon:'🤖', status:'pending' },
+    { step:6, name:'Emailing Manager Report', icon:'📧', status:'pending' },
+    { step:7, name:'Sending Supplier Alerts', icon:'📦', status:'pending' },
+  ];
+  stepsList.innerHTML = defaultSteps.map(s => renderStep(s)).join('');
+
+  try {
+    // Upload file first
+    await uploadFile();
+
+    // Run pipeline
+    const resp = await fetch('/api/run-pipeline', { method: 'POST' });
+    const data = await resp.json();
+
+    // Update steps
+    if (data.steps) {
+      stepsList.innerHTML = data.steps.map(s => renderStep(s)).join('');
+    }
+
+    if (data.status === 'completed') {
+      statusBadge.textContent = 'Completed';
+      statusBadge.className = 'badge badge-completed';
+      btnIcon.textContent = '✅';
+      btnText.textContent = 'Pipeline Complete — View Dashboard';
+      btn.disabled = false;
+      btn.onclick = () => window.location.href = '/dashboard';
+      showNotification('Agentic pipeline completed successfully!', 'success');
+    } else {
+      statusBadge.textContent = 'Failed';
+      statusBadge.className = 'badge badge-failed';
+      btnIcon.textContent = '❌';
+      btnText.textContent = 'Pipeline Failed — Retry';
+      btn.disabled = false;
+      btn.onclick = runPipeline;
+      showNotification('Pipeline failed: ' + (data.error || 'Unknown error'), 'error');
+    }
+  } catch (e) {
+    statusBadge.textContent = 'Error';
+    statusBadge.className = 'badge badge-failed';
+    btnIcon.textContent = '❌';
+    btnText.textContent = 'Error — Retry';
+    btn.disabled = false;
+    btn.onclick = runPipeline;
+    showNotification('Network error: ' + e.message, 'error');
+  }
+}
+
+function renderStep(s) {
+  let statusClass = 'step-pending';
+  let statusIcon = '';
+  if (s.status === 'running') { statusClass = 'step-active'; statusIcon = '⏳'; }
+  else if (s.status === 'completed') { statusClass = 'step-done'; statusIcon = '✓'; }
+  else if (s.status === 'warning') { statusClass = 'step-warn'; statusIcon = '!'; }
+  return `<div class="step-item">
+    <div class="step-icon">${s.icon}</div>
+    <div class="step-info">
+      <div class="step-name">${s.name}</div>
+      ${s.result ? `<div class="step-result">${s.result}</div>` : ''}
+    </div>
+    <div class="step-status ${statusClass}">${statusIcon}</div>
+  </div>`;
+}
+
+/* ═══ NOTIFICATION ═══ */
+function showNotification(msg, type) {
+  const n = document.createElement('div');
+  n.style.cssText = `
+    position:fixed;top:80px;right:20px;z-index:1000;
+    padding:14px 24px;border-radius:12px;font-size:.88rem;font-weight:600;
+    max-width:400px;backdrop-filter:blur(12px);
+    animation:fadeUp .4s ease;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+    border:1px solid ${type==='success'?'rgba(52,211,153,.3)':type==='error'?'rgba(239,68,68,.3)':'rgba(99,102,241,.3)'};
+    background:${type==='success'?'rgba(52,211,153,.12)':type==='error'?'rgba(239,68,68,.12)':'rgba(99,102,241,.12)'};
+    color:${type==='success'?'#34d399':type==='error'?'#ef4444':'#6366f1'};
+  `;
+  n.textContent = msg;
+  document.body.appendChild(n);
+  setTimeout(() => { n.style.opacity = '0'; n.style.transition = 'opacity .4s'; setTimeout(() => n.remove(), 400); }, 4000);
+}
+</script>
 </body>
 </html>
