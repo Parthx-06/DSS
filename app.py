@@ -9,7 +9,6 @@ import pandas as pd
 import requests
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
-from google import genai
 
 load_dotenv()
 
@@ -19,7 +18,6 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 # ═══════════════════════════════════════════════════
 # CONFIGURATION
 # ═══════════════════════════════════════════════════
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY", "").replace(" ", "")
 SMTP_EMAIL = os.getenv("SMTP_EMAIL")
@@ -31,12 +29,6 @@ SUPPLIER_EMAIL = os.getenv("SUPPLIER_EMAIL", MANAGER_EMAIL)
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# Gemini client
-try:
-    client = genai.Client(api_key=GEMINI_API_KEY or "dummy")
-except ValueError:
-    client = None
 
 # ═══════════════════════════════════════════════════
 # IN-MEMORY STATE FOR AGENTIC PIPELINE
@@ -506,50 +498,49 @@ def generate_chart_data(analysis, df):
 # MODULE 3: NEWS INTELLIGENCE (News API)
 # ═══════════════════════════════════════════════════
 def fetch_market_news(products):
-    """Fetch product-related market news from Groq API."""
-    if not GROQ_API_KEY:
-        return {"error": "Groq API key not configured", "articles": [], "count": 0}
+    """Fetch product-related market news using Google News RSS (Free & reliable)."""
+    import xml.etree.ElementTree as ET
+    import urllib.parse
+    all_articles = []
+    
+    for product in products:
+        try:
+            query = urllib.parse.quote(f"{product} business market")
+            resp = requests.get(f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en", timeout=10)
+            if resp.status_code == 200:
+                root = ET.fromstring(resp.content)
+                for item in root.findall('.//item')[:3]:
+                    all_articles.append({
+                        "product": product,
+                        "title": item.find('title').text,
+                        "description": item.find('title').text,
+                        "source": item.find('source').text if item.find('source') is not None else "Google News",
+                        "url": item.find('link').text,
+                        "publishedAt": item.find('pubDate').text,
+                        "image": "",
+                    })
+        except Exception:
+            pass
 
-    product_str = ", ".join(products) if products else "general business"
-    prompt = f"""Generate 5 realistic, recent market news headlines and short descriptions related to these products/categories: {product_str}.
-Return ONLY a valid JSON object with a list 'articles'. Each article MUST have:
-- 'title': realistic news headline
-- 'description': brief summary
-- 'source': realistic mock news source name (e.g. MarketWatch, Bloomberg)
-- 'url': mock url or empty
-- 'publishedAt': mock recent date ISO string
-- 'product': which product it relates to
-
-Output exclusively JSON."""
-
-    try:
-        resp = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "llama3-70b-8192",
-                "messages": [
-                    {"role": "system", "content": "You are a finance and market news AI. Strictly output JSON, no markdown."},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": 0.7,
-                "response_format": {"type": "json_object"}
-            },
-            timeout=15
-        )
-        data = resp.json()
-        if "choices" in data and len(data["choices"]) > 0:
-            content = data["choices"][0]["message"]["content"]
-            parsed_news = json.loads(content)
-            articles = parsed_news.get("articles", [])
-            return {"articles": articles, "count": len(articles)}
-        else:
-            return {"error": "Invalid Groq response", "articles": [], "count": 0}
-    except Exception as e:
-        return {"error": str(e), "articles": [], "count": 0}
+    if not all_articles:
+        try:
+            resp = requests.get("https://news.google.com/rss/search?q=business+market&hl=en-US&gl=US&ceid=US:en", timeout=10)
+            if resp.status_code == 200:
+                root = ET.fromstring(resp.content)
+                for item in root.findall('.//item')[:5]:
+                    all_articles.append({
+                        "product": "General Market",
+                        "title": item.find('title').text,
+                        "description": item.find('title').text,
+                        "source": item.find('source').text if item.find('source') is not None else "Google News",
+                        "url": item.find('link').text,
+                        "publishedAt": item.find('pubDate').text,
+                        "image": "",
+                    })
+        except Exception:
+            pass
+            
+    return {"articles": all_articles, "count": len(all_articles)}
 
 
 # ═══════════════════════════════════════════════════
@@ -612,25 +603,33 @@ Return ONLY a JSON object (no markdown, no code fences):
 }}"""
 
     try:
-        response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-        text = response.text.strip()
-        # Strip code fences if present
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-        if text.endswith("```"):
-            text = text.rsplit("```", 1)[0]
-        return json.loads(text.strip())
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.7,
+                "response_format": {"type": "json_object"}
+            },
+            timeout=20
+        )
+        data = resp.json()
+        if "choices" not in data or len(data["choices"]) == 0:
+            raise Exception(data.get("error", {}).get("message", "Unknown API Error"))
+        text = data["choices"][0]["message"]["content"].strip()
+        return json.loads(text)
     except json.JSONDecodeError:
         return {
             "overall_outlook": "neutral", "confidence": 50,
-            "summary": response.text if response else "Parse error",
-            "product_predictions": [], "key_insights": ["AI response could not be parsed"],
-            "risk_factors": [], "recommendations": [], "raw_response": response.text if response else "",
+            "summary": "Parse error",
+            "product_predictions": [], "key_insights": ["AI response could not be parsed as JSON"],
+            "risk_factors": [], "recommendations": [],
         }
     except Exception as e:
         return {
             "overall_outlook": "error", "confidence": 0,
-            "summary": f"Prediction failed: {e}",
+            "summary": f"Prediction failed via Groq: {e}",
             "product_predictions": [], "key_insights": [], "risk_factors": [], "recommendations": [],
         }
 
@@ -676,18 +675,26 @@ def detect_anomalies(analysis, df):
 # MODULE 6: EMAIL REPORTER
 # ═══════════════════════════════════════════════════
 def send_email(to_email, subject, html_body):
-    """Send an HTML email via SMTP."""
+    """Fallback: Save email locally and open it using os package."""
+    import re
+    import platform
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = SMTP_EMAIL
-        msg["To"] = to_email
-        msg.attach(MIMEText(html_body, "html"))
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_EMAIL, SMTP_PASSWORD)
-            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
-        return True, "Email sent successfully"
+        safe_subject = re.sub(r'[^a-zA-Z0-9_\- ]', '', subject).strip().replace(' ', '_')
+        filename = f"email_{safe_subject}.html"
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(html_body)
+            
+        abs_path = os.path.abspath(filepath)
+        if platform.system() == 'Windows':
+            os.startfile(abs_path)
+        elif platform.system() == 'Darwin':
+            os.system(f"open '{abs_path}'")
+        else:
+            os.system(f"xdg-open '{abs_path}'")
+            
+        return True, f"Email report safely generated at {filepath}"
     except Exception as e:
         return False, str(e)
 
@@ -814,32 +821,49 @@ def send_supplier_alerts(predictions):
 # ═══════════════════════════════════════════════════
 # MODULE 8: WHAT-IF SCENARIO ENGINE
 # ═══════════════════════════════════════════════════
-def run_what_if(analysis, scenario):
-    prompt = f"""You are a business analyst. Given data and a hypothetical scenario, predict the outcome.
+def run_what_if(analysis, scenario, news_data=None):
+    news_summary = ""
+    if news_data:
+        for a in news_data.get("articles", [])[:10]:
+            news_summary += f"- [{a.get('product','')}] {a.get('title')}: {a.get('description')}\n"
+
+    prompt = f"""You are a business analyst. Given data, real market news, and a hypothetical scenario, predict the outcome using deep logic.
 
 CURRENT DATA:
 {json.dumps(analysis.get('category_stats', {}), indent=2)}
+
+MARKET NEWS:
+{news_summary if news_summary else 'No recent news available.'}
 
 SCENARIO: {scenario}
 
 Return ONLY JSON (no markdown/code fences):
 {{
   "scenario": "{scenario}",
-  "impact_summary": "2-3 sentences",
+  "impact_summary": "2-3 sentences incorporating news factors",
   "product_impacts": [
-    {{"product":"Category Value Name","sales_change_percent":number,"profit_change_percent":number,"explanation":"brief"}}
+    {{"product":"Category Value Name","sales_change_percent":number,"profit_change_percent":number,"explanation":"brief factor based evaluation"}}
   ],
   "overall_risk": "low/medium/high",
   "recommendation": "what to do"
 }}"""
     try:
-        resp = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-        text = resp.text.strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-        if text.endswith("```"):
-            text = text.rsplit("```", 1)[0]
-        return json.loads(text.strip())
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.7,
+                "response_format": {"type": "json_object"}
+            },
+            timeout=20
+        )
+        data = resp.json()
+        if "choices" not in data or len(data["choices"]) == 0:
+            raise Exception(data.get("error", {}).get("message", "Unknown API Error"))
+        text = data["choices"][0]["message"]["content"].strip()
+        return json.loads(text)
     except Exception as e:
         return {"error": str(e)}
 
@@ -939,7 +963,8 @@ def api_what_if():
     if not os.path.exists(filepath):
         filepath = "sales.csv"
     analysis, _ = analyze_csv(filepath)
-    return jsonify(run_what_if(analysis, scenario))
+    news = pipeline_state.get("news", {})
+    return jsonify(run_what_if(analysis, scenario, news))
 
 
 @app.route("/api/run-pipeline", methods=["POST"])
