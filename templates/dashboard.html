@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — NEXT CORE AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <title>NEXUS DSS — Decision Support System</title>
+    <meta name="description" content="Enterprise Decision Support System with Pareto analysis, forecasting, risk scoring, and advanced visualizations.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="/static/dashboard.css">
 </head>
-
 <body>
     <div class="bg-mesh"></div>
     <div class="orb orb-1"></div>
@@ -19,7 +17,7 @@
 
     <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="nav-logo">NEXT CORE AI</div>
+        <div class="nav-logo">NEXUS<span> DSS</span></div>
         <div class="nav-center">
             <span class="pipeline-indicator" id="pipelineIndicator">
                 <span class="dot dot-idle"></span> <span id="pipelineLabel">Ready</span>
@@ -35,104 +33,80 @@
     <main class="dashboard">
         <!-- KPI ROW -->
         <section class="kpi-row" id="kpiRow">
-            <div class="kpi-card">
-                <div class="kpi-icon ki-indigo">💰</div>
-                <div class="kpi-body">
-                    <div class="kpi-label">Total Revenue</div>
-                    <div class="kpi-value" id="kpiRevenue">$0</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon ki-green">📈</div>
-                <div class="kpi-body">
-                    <div class="kpi-label">Total Profit</div>
-                    <div class="kpi-value" id="kpiProfit">$0</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon ki-amber">📊</div>
-                <div class="kpi-body">
-                    <div class="kpi-label">Profit Margin</div>
-                    <div class="kpi-value" id="kpiMargin">0%</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon ki-pink">🏆</div>
-                <div class="kpi-body">
-                    <div class="kpi-label">Top Product</div>
-                    <div class="kpi-value" id="kpiTop">—</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon ki-cyan">🌐</div>
-                <div class="kpi-body">
-                    <div class="kpi-label">Market Outlook</div>
-                    <div class="kpi-value" id="kpiOutlook">—</div>
-                </div>
-            </div>
+            <div class="kpi-card"><div class="kpi-icon ki-indigo">💰</div><div class="kpi-body"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="kpiRevenue">$0</div></div></div>
+            <div class="kpi-card"><div class="kpi-icon ki-green">📈</div><div class="kpi-body"><div class="kpi-label">Total Profit</div><div class="kpi-value" id="kpiProfit">$0</div></div></div>
+            <div class="kpi-card"><div class="kpi-icon ki-amber">📊</div><div class="kpi-body"><div class="kpi-label">Profit Margin</div><div class="kpi-value" id="kpiMargin">0%</div></div></div>
+            <div class="kpi-card"><div class="kpi-icon ki-pink">🏆</div><div class="kpi-body"><div class="kpi-label">Top Product</div><div class="kpi-value" id="kpiTop">—</div></div></div>
+            <div class="kpi-card"><div class="kpi-icon ki-cyan">🌐</div><div class="kpi-body"><div class="kpi-label">Market Outlook</div><div class="kpi-value" id="kpiOutlook">—</div></div></div>
         </section>
 
-        <!-- MAIN GRID: Charts + Side Panel -->
+        <!-- TAB NAVIGATION -->
+        <div class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="visualizations" onclick="switchTab('visualizations')">📊 Visualizations</button>
+            <button class="tab-btn" data-tab="dss" onclick="switchTab('dss')">🎯 DSS Analytics</button>
+            <button class="tab-btn" data-tab="forecasting" onclick="switchTab('forecasting')">📐 Forecasting</button>
+            <button class="tab-btn" data-tab="advisor" onclick="switchTab('advisor')">🧠 Strategic Advisor</button>
+        </div>
+
+        <!-- MAIN GRID -->
         <div class="main-grid">
-            <!-- CHARTS -->
-            <section class="charts-section">
-                <h2 class="section-title">📊 Data Visualizations <span class="badge-count" id="chartCount">0 Charts</span></h2>
-                <div class="charts-grid" id="chartsGrid">
-                    <!-- Charts are dynamically inserted by JS -->
-                    <div class="chart-card" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2);">
-                        ⏳ Loading charts...
-                    </div>
+            <div>
+                <!-- TAB: VISUALIZATIONS -->
+                <div class="tab-content active" id="tab-visualizations">
+                    <section class="charts-section">
+                        <h2 class="section-title">📊 Data Visualizations <span class="badge-count" id="chartCount">0 Charts</span></h2>
+                        <div class="charts-grid" id="chartsGrid">
+                            <div class="chart-card" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2);">⏳ Loading charts...</div>
+                        </div>
+                    </section>
                 </div>
-            </section>
+
+                <!-- TAB: DSS ANALYTICS -->
+                <div class="tab-content" id="tab-dss">
+                    <section>
+                        <h2 class="section-title">🎯 Decision Support Analytics <span class="badge-count" id="dssCount">7 Modules</span></h2>
+                        <div class="dss-grid" id="dssGrid">
+                            <div class="dss-card" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2);">⏳ Loading DSS analytics...</div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB: FORECASTING -->
+                <div class="tab-content" id="tab-forecasting">
+                    <section>
+                        <h2 class="section-title">📐 Forecasting & Sensitivity <span class="badge-count">Advanced</span></h2>
+                        <div class="dss-grid" id="forecastGrid">
+                            <div class="dss-card" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2);">⏳ Loading forecast data...</div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB: STRATEGIC ADVISOR -->
+                <div class="tab-content" id="tab-advisor">
+                    <section>
+                        <h2 class="section-title">🧠 Strategic Advisor <span class="badge-count" style="background:rgba(167,139,250,.12);color:#a78bfa;">AI-Powered</span></h2>
+                        <div id="advisorGrid" class="dss-grid">
+                            <div class="dss-card dss-card-full" style="text-align:center;padding:40px;">
+                                <div style="font-size:2rem;margin-bottom:12px;">🧠</div>
+                                <div style="color:var(--text2);font-size:.85rem;">Click below to get AI-powered strategic recommendations</div>
+                                <button class="btn-sm btn-primary-sm" style="margin-top:16px;" onclick="loadAdvisor()">Generate Strategic Analysis</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
 
             <!-- SIDE PANEL -->
             <aside class="side-panel">
-                <!-- Pipeline Steps -->
-                <div class="panel-card">
-                    <div class="panel-title">🤖 Agentic Pipeline</div>
-                    <div id="pipelineSteps" class="pipeline-steps">
-                        <div class="step-placeholder">Click "Run Pipeline" to start</div>
-                    </div>
-                </div>
-
-                <!-- AI Predictions -->
-                <div class="panel-card">
-                    <div class="panel-title">🔮 AI Predictions</div>
-                    <div id="predictionsPanel" class="predictions-panel">
-                        <div class="step-placeholder">Run pipeline to see predictions</div>
-                    </div>
-                </div>
-
-                <!-- Anomalies -->
-                <div class="panel-card">
-                    <div class="panel-title">⚠️ Anomaly Alerts</div>
-                    <div id="anomalyPanel" class="anomaly-panel">
-                        <div class="step-placeholder">No anomalies detected yet</div>
-                    </div>
-                </div>
-
-                <!-- News -->
-                <div class="panel-card">
-                    <div class="panel-title">📰 Market News</div>
-                    <div id="newsPanel" class="news-panel">
-                        <div class="step-placeholder">Run pipeline to fetch news</div>
-                    </div>
-                </div>
-
-                <!-- What-If -->
-                <div class="panel-card">
-                    <div class="panel-title">🔬 What-If Scenarios</div>
-                    <div class="whatif-form">
-                        <input type="text" id="whatifInput" placeholder="e.g. What if prices increase 20%?"
-                            class="whatif-input">
-                        <button class="btn-sm btn-primary-sm" onclick="runWhatIf()">Analyze</button>
-                    </div>
+                <div class="panel-card"><div class="panel-title">🤖 Agentic Pipeline</div><div id="pipelineSteps" class="pipeline-steps"><div class="step-placeholder">Click "Run Pipeline" to start</div></div></div>
+                <div class="panel-card"><div class="panel-title">🔮 AI Predictions</div><div id="predictionsPanel" class="predictions-panel"><div class="step-placeholder">Run pipeline to see predictions</div></div></div>
+                <div class="panel-card"><div class="panel-title">⚠️ Anomaly Alerts</div><div id="anomalyPanel" class="anomaly-panel"><div class="step-placeholder">No anomalies detected yet</div></div></div>
+                <div class="panel-card"><div class="panel-title">📰 Market News</div><div id="newsPanel" class="news-panel"><div class="step-placeholder">Run pipeline to fetch news</div></div></div>
+                <div class="panel-card"><div class="panel-title">🔬 What-If Scenarios</div>
+                    <div class="whatif-form"><input type="text" id="whatifInput" placeholder="e.g. What if prices increase 20%?" class="whatif-input"><button class="btn-sm btn-primary-sm" onclick="runWhatIf()">Analyze</button></div>
                     <div id="whatifResult" class="whatif-result"></div>
                 </div>
-
-                <!-- Actions -->
-                <div class="panel-card">
-                    <div class="panel-title">⚡ Quick Actions</div>
+                <div class="panel-card"><div class="panel-title">⚡ Quick Actions</div>
                     <div class="actions-stack">
                         <button class="btn-action" onclick="emailReport()">📧 Email Manager Report</button>
                         <button class="btn-action" onclick="alertSuppliers()">📦 Alert Suppliers</button>
@@ -142,60 +116,19 @@
             </aside>
         </div>
 
-        <!-- CALCULATORS (Collapsible) -->
+        <!-- CALCULATORS -->
         <section class="calcs-section" id="calcsSection" style="display:none;">
             <h2 class="section-title">🧮 Manufacturing Calculators</h2>
             <div class="calcs-grid">
-                <div class="calc-card">
-                    <h3>EOQ Calculator</h3>
-                    <div class="calc-fields">
-                        <label>Annual demand<input type="number" id="eoqD" value="10000"></label>
-                        <label>Order cost ($)<input type="number" id="eoqS" value="100"></label>
-                        <label>Holding cost ($)<input type="number" id="eoqH" value="2"></label>
-                    </div>
-                    <button class="btn-sm btn-primary-sm" onclick="calcEOQ()">Calculate</button>
-                    <div class="calc-result" id="eoqRes"></div>
-                </div>
-                <div class="calc-card">
-                    <h3>Reorder Point</h3>
-                    <div class="calc-fields">
-                        <label>Avg demand/day<input type="number" id="ropD" value="50"></label>
-                        <label>Std deviation<input type="number" id="ropS" value="8"></label>
-                        <label>Lead time (days)<input type="number" id="ropL" value="5"></label>
-                        <label>Service level %<input type="number" id="ropSL" value="95"></label>
-                    </div>
-                    <button class="btn-sm btn-primary-sm" onclick="calcROP()">Calculate</button>
-                    <div class="calc-result" id="ropRes"></div>
-                </div>
-                <div class="calc-card">
-                    <h3>Break-even Analysis</h3>
-                    <div class="calc-fields">
-                        <label>Fixed costs ($)<input type="number" id="beF" value="50000"></label>
-                        <label>Variable cost/unit ($)<input type="number" id="beV" value="30"></label>
-                        <label>Selling price ($)<input type="number" id="beP" value="50"></label>
-                    </div>
-                    <button class="btn-sm btn-primary-sm" onclick="calcBE()">Calculate</button>
-                    <div class="calc-result" id="beRes"></div>
-                </div>
-                <div class="calc-card">
-                    <h3>Make or Buy</h3>
-                    <div class="calc-fields">
-                        <label>Make fixed ($)<input type="number" id="mobF" value="20000"></label>
-                        <label>Make var/unit ($)<input type="number" id="mobV" value="15"></label>
-                        <label>Buy price ($)<input type="number" id="mobB" value="20"></label>
-                        <label>Volume<input type="number" id="mobQ" value="5000"></label>
-                    </div>
-                    <button class="btn-sm btn-primary-sm" onclick="calcMOB()">Calculate</button>
-                    <div class="calc-result" id="mobRes"></div>
-                </div>
+                <div class="calc-card"><h3>EOQ Calculator</h3><div class="calc-fields"><label>Annual demand<input type="number" id="eoqD" value="10000"></label><label>Order cost ($)<input type="number" id="eoqS" value="100"></label><label>Holding cost ($)<input type="number" id="eoqH" value="2"></label></div><button class="btn-sm btn-primary-sm" onclick="calcEOQ()">Calculate</button><div class="calc-result" id="eoqRes"></div></div>
+                <div class="calc-card"><h3>Reorder Point</h3><div class="calc-fields"><label>Avg demand/day<input type="number" id="ropD" value="50"></label><label>Std deviation<input type="number" id="ropS" value="8"></label><label>Lead time (days)<input type="number" id="ropL" value="5"></label><label>Service level %<input type="number" id="ropSL" value="95"></label></div><button class="btn-sm btn-primary-sm" onclick="calcROP()">Calculate</button><div class="calc-result" id="ropRes"></div></div>
+                <div class="calc-card"><h3>Break-even Analysis</h3><div class="calc-fields"><label>Fixed costs ($)<input type="number" id="beF" value="50000"></label><label>Variable cost/unit ($)<input type="number" id="beV" value="30"></label><label>Selling price ($)<input type="number" id="beP" value="50"></label></div><button class="btn-sm btn-primary-sm" onclick="calcBE()">Calculate</button><div class="calc-result" id="beRes"></div></div>
+                <div class="calc-card"><h3>Make or Buy</h3><div class="calc-fields"><label>Make fixed ($)<input type="number" id="mobF" value="20000"></label><label>Make var/unit ($)<input type="number" id="mobV" value="15"></label><label>Buy price ($)<input type="number" id="mobB" value="20"></label><label>Volume<input type="number" id="mobQ" value="5000"></label></div><button class="btn-sm btn-primary-sm" onclick="calcMOB()">Calculate</button><div class="calc-result" id="mobRes"></div></div>
             </div>
         </section>
     </main>
 
-    <!-- Notification container -->
     <div id="toastContainer"></div>
-
     <script src="/static/dashboard.js"></script>
 </body>
-
 </html>

@@ -331,7 +331,7 @@ body{
 
 <!-- ═══ NAVBAR ═══ -->
 <nav class="navbar" id="navbar">
-  <div class="nav-logo">NEXT CORE AI</div>
+  <div class="nav-logo">NEXUS DSS</div>
   <div class="nav-links">
     <a href="/dashboard" class="nav-btn nav-btn-outline">📊 Dashboard</a>
     <a href="#upload" class="nav-btn nav-btn-primary">🚀 Get Started</a>
@@ -342,10 +342,10 @@ body{
 <section class="hero">
   <div class="hero-badge">
     <span class="pulse"></span>
-    Autonomous Agentic Pipeline v2.0
+    Autonomous Decision Support System v3.0
   </div>
-  <h1>AI-Powered Sales Intelligence Platform</h1>
-  <p>Upload your dataset, and our autonomous AI agent will analyze patterns, predict market trends using real-time news, alert suppliers, and email actionable reports — all in one click.</p>
+  <h1>Enterprise Decision Support Intelligence</h1>
+  <p>Upload any dataset and our autonomous AI engine runs Pareto analysis, statistical forecasting, risk scoring, sensitivity mapping, decision matrices, and market predictions — delivering actionable intelligence in one pipeline.</p>
 </section>
 
 <!-- ═══ UPLOAD SECTION ═══ -->
@@ -387,54 +387,74 @@ body{
 
 <!-- ═══ FEATURES ═══ -->
 <section class="features">
-  <h2>Agentic Workflow Features</h2>
+  <h2>Decision Support Capabilities</h2>
   <div class="features-grid">
     <div class="feature-card">
-      <div class="feature-icon fi-indigo">📊</div>
-      <h3>CSV Feature Extraction</h3>
-      <p>Auto-detects columns, calculates statistics, correlations, growth rates, and product performance scorecards from your data.</p>
+      <div class="feature-icon fi-green">📊</div>
+      <h3>Pareto / ABC Analysis</h3>
+      <p>Classifies categories into A/B/C tiers by cumulative revenue contribution. Focus on the 20% that drives 80% of value.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon fi-pink">📈</div>
-      <h3>10 Interactive Charts</h3>
-      <p>Bar, line, pie, radar, doughnut, stacked, and area charts — auto-generated from your dataset with gradient fills and animations.</p>
+      <div class="feature-icon fi-indigo">🎯</div>
+      <h3>Decision Matrix</h3>
+      <p>Multi-criteria weighted scoring across all numeric dimensions. Produces actionable ranked priorities with normalized scores.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-red">🛡️</div>
+      <h3>Risk Scoring Engine</h3>
+      <p>Composite risk assessment per category based on volatility, growth instability, and revenue concentration factors.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-cyan">📈</div>
+      <h3>Statistical Forecasting</h3>
+      <p>Linear regression + moving average with 95% confidence intervals. Predicts next-period values with trend decomposition.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-pink">🎚️</div>
+      <h3>Sensitivity Analysis</h3>
+      <p>Impact ranking showing which inputs drive results most. Quantifies the effect of 10% changes on each category.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-amber">📏</div>
+      <h3>Concentration Index (HHI)</h3>
+      <p>Herfindahl-Hirschman Index measuring portfolio diversification risk. Flags dangerous revenue concentration patterns.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon fi-cyan">📰</div>
       <h3>Market News Intelligence</h3>
-      <p>Fetches live news for each product via News API, correlates with sales data for contextual market predictions.</p>
+      <p>Fetches live news via Google News RSS per product, correlates with data for contextual market predictions.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon fi-green">🤖</div>
       <h3>AI Market Predictions</h3>
-      <p>Gemini AI combines your data + news to predict which products will sell more and which will decline — with confidence scores.</p>
+      <p>Groq LLaMA 3.3 combines data + news to predict trends, confidence scores, and stock action recommendations.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon fi-amber">🔍</div>
       <h3>Anomaly Detection</h3>
-      <p>Automatically identifies growth spikes, profit margin drops, and high-variability products that need attention.</p>
+      <p>Automatically identifies growth spikes, profit drops, and high-variability products that need immediate attention.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon fi-red">📦</div>
       <h3>Supplier Auto-Alerts</h3>
-      <p>If sales are predicted to spike — automatically emails suppliers to increase stock. If declining — reduce orders.</p>
+      <p>If demand is predicted to spike — auto-emails suppliers to increase stock. If declining — reduce orders.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon fi-indigo">📧</div>
-      <h3>Manager Email Reports</h3>
-      <p>Generates beautiful HTML reports with KPIs, predictions, anomalies, and recommendations — sent directly to your manager.</p>
+      <h3>Manager Reports</h3>
+      <p>Generates rich HTML reports with KPIs, predictions, anomalies, and recommendations — sent directly via email.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon fi-pink">🔮</div>
       <h3>What-If Scenarios</h3>
-      <p>Ask "What if prices increase 20%?" and the AI predicts the impact on each product's sales and profitability.</p>
+      <p>Ask "What if prices increase 20%?" and the AI predicts the impact on each product's performance and profitability.</p>
     </div>
   </div>
 </section>
 
 <!-- ═══ FOOTER ═══ -->
 <footer class="footer">
-  <p>NEXT CORE AI — Autonomous Sales Intelligence Platform · Built with Gemini AI + News API</p>
+  <p>NEXUS DSS — Enterprise Decision Support System · Pareto · Forecasting · Risk · Sensitivity · Decision Matrix · HHI</p>
 </footer>
 
 <script>
@@ -501,12 +521,13 @@ async function runPipeline() {
   // Show placeholder steps
   const defaultSteps = [
     { step:1, name:'Analyzing CSV Data', icon:'📊', status:'pending' },
-    { step:2, name:'Generating 10 Charts', icon:'📈', status:'pending' },
+    { step:2, name:'Generating Charts', icon:'📈', status:'pending' },
     { step:3, name:'Detecting Anomalies', icon:'🔍', status:'pending' },
     { step:4, name:'Fetching Market News', icon:'📰', status:'pending' },
     { step:5, name:'Running AI Predictions', icon:'🤖', status:'pending' },
     { step:6, name:'Emailing Manager Report', icon:'📧', status:'pending' },
     { step:7, name:'Sending Supplier Alerts', icon:'📦', status:'pending' },
+    { step:8, name:'DSS Analytics Engine', icon:'🎯', status:'pending' },
   ];
   stepsList.innerHTML = defaultSteps.map(s => renderStep(s)).join('');
 

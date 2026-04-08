@@ -635,7 +635,235 @@ Return ONLY a JSON object (no markdown, no code fences):
 
 
 # ═══════════════════════════════════════════════════
-# MODULE 5: ANOMALY DETECTION
+# MODULE 5A: PARETO / ABC ANALYSIS
+# ═══════════════════════════════════════════════════
+def pareto_abc_analysis(analysis, df):
+    """Classify categories into A/B/C tiers based on cumulative contribution."""
+    pc = analysis.get("primary_cat")
+    pn = analysis.get("primary_num")
+    if not pc or not pn:
+        return {"tiers": {}, "chart_data": {}}
+    grp = df.groupby(pc)[pn].sum().sort_values(ascending=False)
+    total = grp.sum()
+    if total == 0:
+        return {"tiers": {}, "chart_data": {}}
+    cum = 0
+    tiers = {}
+    labels, values, cumulative, tier_colors = [], [], [], []
+    color_map = {"A": "#34d399", "B": "#fbbf24", "C": "#ef4444"}
+    for cat, val in grp.items():
+        cum += val
+        pct = cum / total * 100
+        tier = "A" if pct <= 80 else ("B" if pct <= 95 else "C")
+        tiers[str(cat)] = {"value": round(float(val), 2), "pct": round(float(val / total * 100), 2),
+                           "cumulative_pct": round(float(pct), 2), "tier": tier}
+        labels.append(str(cat))
+        values.append(round(float(val), 2))
+        cumulative.append(round(float(pct), 2))
+        tier_colors.append(color_map[tier])
+    return {"tiers": tiers, "chart_data": {"labels": labels, "values": values,
+            "cumulative": cumulative, "tier_colors": tier_colors}}
+
+
+# ═══════════════════════════════════════════════════
+# MODULE 5B: STATISTICAL FORECASTING
+# ═══════════════════════════════════════════════════
+def statistical_forecast(analysis, df):
+    """Linear regression + moving average forecast for time-series data."""
+    tc = analysis.get("time_col")
+    pn = analysis.get("primary_num")
+    tl = analysis.get("time_labels", [])
+    if not tc or not pn or len(tl) < 3:
+        return {"forecast": [], "trend": "insufficient_data"}
+    time_vals = []
+    for t in tl:
+        td = df[df[tc].astype(str).str.strip().str.lower() == str(t).strip().lower()]
+        time_vals.append(round(float(td[pn].sum()), 2) if len(td) > 0 else 0)
+    n = len(time_vals)
+    x_mean = (n - 1) / 2
+    y_mean = sum(time_vals) / n
+    num = sum((i - x_mean) * (time_vals[i] - y_mean) for i in range(n))
+    den = sum((i - x_mean) ** 2 for i in range(n))
+    slope = num / den if den != 0 else 0
+    intercept = y_mean - slope * x_mean
+    fitted = [round(intercept + slope * i, 2) for i in range(n)]
+    residuals = [time_vals[i] - fitted[i] for i in range(n)]
+    std_err = (sum(r ** 2 for r in residuals) / max(n - 2, 1)) ** 0.5
+    forecast_periods = min(3, max(1, n // 3))
+    forecasted = []
+    for j in range(1, forecast_periods + 1):
+        val = round(intercept + slope * (n - 1 + j), 2)
+        forecasted.append({"period": f"F+{j}", "value": val,
+                           "lower": round(val - 1.96 * std_err, 2),
+                           "upper": round(val + 1.96 * std_err, 2)})
+    ma_window = min(3, n)
+    ma = [round(sum(time_vals[max(0, i - ma_window + 1):i + 1]) / min(i + 1, ma_window), 2) for i in range(n)]
+    trend = "growing" if slope > 0 else ("declining" if slope < 0 else "flat")
+    return {"actual": time_vals, "fitted": fitted, "moving_avg": ma, "forecast": forecasted,
+            "slope": round(slope, 4), "intercept": round(intercept, 2), "std_error": round(std_err, 2),
+            "trend": trend, "labels": tl}
+
+
+# ═══════════════════════════════════════════════════
+# MODULE 5C: SENSITIVITY ANALYSIS
+# ═══════════════════════════════════════════════════
+def sensitivity_analysis(analysis, df):
+    """Compute sensitivity/elasticity of each category to changes."""
+    pc = analysis.get("primary_cat")
+    nc = analysis.get("numeric_cols", [])
+    cat_stats = analysis.get("category_stats", {}).get(pc, {})
+    if not pc or len(nc) < 1:
+        return {"sensitivities": []}
+    pn = analysis.get("primary_num")
+    total = float(df[pn].sum()) if pn else 1
+    results = []
+    for cat, stats in cat_stats.items():
+        cat_val = stats.get(pn, {}).get("sum", 0)
+        cat_std = stats.get(pn, {}).get("std", 0)
+        share = (cat_val / total * 100) if total > 0 else 0
+        volatility = (cat_std / stats.get(pn, {}).get("mean", 1) * 100) if stats.get(pn, {}).get("mean", 0) > 0 else 0
+        impact_10pct = round(cat_val * 0.1, 2)
+        results.append({"category": cat, "current_value": round(cat_val, 2),
+                        "share_pct": round(share, 2), "volatility_cv": round(volatility, 2),
+                        "impact_of_10pct_change": impact_10pct,
+                        "sensitivity_rank": round(share * (1 + volatility / 100), 2)})
+    results.sort(key=lambda x: x["sensitivity_rank"], reverse=True)
+    return {"sensitivities": results, "metric": pn}
+
+
+# ═══════════════════════════════════════════════════
+# MODULE 5D: DECISION MATRIX (WEIGHTED SCORING)
+# ═══════════════════════════════════════════════════
+def decision_matrix(analysis, df):
+    """Multi-criteria weighted scoring of categories across numeric dimensions."""
+    pc = analysis.get("primary_cat")
+    nc = analysis.get("numeric_cols", [])
+    cat_stats = analysis.get("category_stats", {}).get(pc, {})
+    if not pc or len(nc) < 2:
+        return {"matrix": [], "criteria": []}
+    criteria = nc[:5]
+    maxes = {}
+    for c in criteria:
+        vals = [cat_stats.get(cat, {}).get(c, {}).get("sum", 0) for cat in cat_stats]
+        maxes[c] = max(vals) if vals and max(vals) > 0 else 1
+    weight = 1.0 / len(criteria)
+    matrix = []
+    for cat, stats in cat_stats.items():
+        scores = {}
+        weighted_total = 0
+        for c in criteria:
+            raw = stats.get(c, {}).get("sum", 0)
+            normalized = round((raw / maxes[c]) * 100, 1)
+            scores[c] = {"raw": round(raw, 2), "normalized": normalized}
+            weighted_total += normalized * weight
+        matrix.append({"category": cat, "scores": scores, "weighted_total": round(weighted_total, 1)})
+    matrix.sort(key=lambda x: x["weighted_total"], reverse=True)
+    for i, m in enumerate(matrix):
+        m["rank"] = i + 1
+    return {"matrix": matrix, "criteria": criteria, "weight_per_criteria": round(weight * 100, 1)}
+
+
+# ═══════════════════════════════════════════════════
+# MODULE 5E: RISK SCORING ENGINE
+# ═══════════════════════════════════════════════════
+def risk_scoring(analysis, df):
+    """Composite risk score per category based on volatility, growth, concentration."""
+    pc = analysis.get("primary_cat")
+    pn = analysis.get("primary_num")
+    cat_stats = analysis.get("category_stats", {}).get(pc, {})
+    growth = analysis.get("growth_rates", {})
+    if not pc or not pn:
+        return {"risks": []}
+    total = float(df[pn].sum()) if pn else 1
+    risks = []
+    for cat, stats in cat_stats.items():
+        cat_val = stats.get(pn, {}).get("sum", 0)
+        cat_std = stats.get(pn, {}).get("std", 0)
+        cat_mean = stats.get(pn, {}).get("mean", 1)
+        cv = (cat_std / cat_mean * 100) if cat_mean > 0 else 0
+        concentration = (cat_val / total * 100) if total > 0 else 0
+        gr = growth.get(str(cat), [])
+        avg_growth = sum(gr) / len(gr) if gr else 0
+        growth_vol = (sum((g - avg_growth) ** 2 for g in gr) / len(gr)) ** 0.5 if gr else 0
+        vol_score = min(cv / 50 * 40, 40)
+        conc_score = min(concentration / 30 * 30, 30)
+        growth_score = min(growth_vol / 20 * 30, 30)
+        risk_total = round(vol_score + conc_score + growth_score, 1)
+        level = "HIGH" if risk_total > 60 else ("MEDIUM" if risk_total > 30 else "LOW")
+        risks.append({"category": cat, "risk_score": risk_total, "risk_level": level,
+                       "volatility_score": round(vol_score, 1), "concentration_score": round(conc_score, 1),
+                       "growth_instability_score": round(growth_score, 1),
+                       "cv_pct": round(cv, 1), "share_pct": round(concentration, 1)})
+    risks.sort(key=lambda x: x["risk_score"], reverse=True)
+    return {"risks": risks}
+
+
+# ═══════════════════════════════════════════════════
+# MODULE 5F: CONCENTRATION INDEX (HHI)
+# ═══════════════════════════════════════════════════
+def concentration_index(analysis, df):
+    """Herfindahl-Hirschman Index measuring revenue concentration risk."""
+    pc = analysis.get("primary_cat")
+    pn = analysis.get("primary_num")
+    if not pc or not pn:
+        return {"hhi": 0, "interpretation": "N/A"}
+    grp = df.groupby(pc)[pn].sum()
+    total = grp.sum()
+    if total == 0:
+        return {"hhi": 0, "interpretation": "N/A"}
+    shares = [(v / total * 100) for v in grp.values]
+    hhi = round(sum(s ** 2 for s in shares), 1)
+    if hhi > 2500:
+        interp = "Highly Concentrated — significant dependency risk"
+    elif hhi > 1500:
+        interp = "Moderately Concentrated — some dependency risk"
+    else:
+        interp = "Well Diversified — low concentration risk"
+    return {"hhi": hhi, "max_possible": 10000, "interpretation": interp,
+            "shares": [{"category": str(c), "share": round(s, 2)} for c, s in zip(grp.index, shares)]}
+
+
+# ═══════════════════════════════════════════════════
+# MODULE 5G: COMPARATIVE PERIOD ANALYSIS
+# ═══════════════════════════════════════════════════
+def period_comparison(analysis, df):
+    """Compare first-half vs second-half performance."""
+    tc = analysis.get("time_col")
+    pn = analysis.get("primary_num")
+    pc = analysis.get("primary_cat")
+    tl = analysis.get("time_labels", [])
+    if not tc or not pn or len(tl) < 2:
+        return {"comparison": []}
+    mid = len(tl) // 2
+    h1_labels, h2_labels = tl[:mid], tl[mid:]
+    def sum_period(data, labels):
+        total = 0
+        for t in labels:
+            td = data[data[tc].astype(str).str.strip().str.lower() == str(t).strip().lower()]
+            total += float(td[pn].sum()) if len(td) > 0 else 0
+        return round(total, 2)
+    results = []
+    if pc:
+        for cat in analysis.get("category_values", {}).get(pc, []):
+            sub = df[df[pc] == cat]
+            h1 = sum_period(sub, h1_labels)
+            h2 = sum_period(sub, h2_labels)
+            change = round(((h2 - h1) / h1 * 100) if h1 > 0 else 0, 2)
+            momentum = "Accelerating" if change > 10 else ("Decelerating" if change < -10 else "Stable")
+            results.append({"category": str(cat), "period_1": h1, "period_2": h2,
+                            "change_pct": change, "momentum": momentum})
+    else:
+        h1 = sum_period(df, h1_labels)
+        h2 = sum_period(df, h2_labels)
+        change = round(((h2 - h1) / h1 * 100) if h1 > 0 else 0, 2)
+        results.append({"category": "Overall", "period_1": h1, "period_2": h2,
+                        "change_pct": change, "momentum": "Accelerating" if change > 10 else ("Decelerating" if change < -10 else "Stable")})
+    return {"comparison": results, "period_1_label": f"{tl[0]}–{tl[mid - 1]}",
+            "period_2_label": f"{tl[mid]}–{tl[-1]}", "metric": pn}
+
+
+# ═══════════════════════════════════════════════════
+# MODULE 6: ANOMALY DETECTION
 # ═══════════════════════════════════════════════════
 def detect_anomalies(analysis, df):
     """Detect data anomalies — fully generic."""
@@ -675,28 +903,46 @@ def detect_anomalies(analysis, df):
 # MODULE 6: EMAIL REPORTER
 # ═══════════════════════════════════════════════════
 def send_email(to_email, subject, html_body):
-    """Fallback: Save email locally and open it using os package."""
+    """Alternative: Open default mail client (mailto) with pre-filled text."""
     import re
     import platform
+    import urllib.parse
+    import webbrowser
+    
     try:
+        # Save HTML locally as a backup
         safe_subject = re.sub(r'[^a-zA-Z0-9_\- ]', '', subject).strip().replace(' ', '_')
         filename = f"email_{safe_subject}.html"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
-        
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(html_body)
             
-        abs_path = os.path.abspath(filepath)
-        if platform.system() == 'Windows':
-            os.startfile(abs_path)
-        elif platform.system() == 'Darwin':
-            os.system(f"open '{abs_path}'")
-        else:
-            os.system(f"xdg-open '{abs_path}'")
+        # Convert HTML to basic Plain Text for the email client body
+        text_body = re.sub(r'<style[^>]*>[\s\S]*?</style>', '', html_body)
+        text_body = text_body.replace('</tr>', '\n').replace('</h1>', '\n\n').replace('</h3>', '\n').replace('</li>', '\n')
+        text_body = re.sub(r'<[^>]+>', ' ', text_body)
+        text_body = re.sub(r'[ \t]+', ' ', text_body)
+        text_body = "\n".join(line.strip() for line in text_body.split('\n') if line.strip())
+        
+        final_body = (
+            f"--- SYSTEM AUTO-GENERATED REPORT ---\n\n"
+            f"{text_body}\n\n"
+            f"--- END OF REPORT ---\n"
+            f"(Rich HTML version safely compiled to: {filepath})"
+        )
+        
+        # Prevent URL TOO LONG crash on windows (standard limit ~2048 chars)
+        if len(final_body) > 1700:
+            final_body = final_body[:1700] + "\n\n...[REPORT TRUNCATED DUE TO URL LENGTH LIMITS]..."
             
-        return True, f"Email report safely generated at {filepath}"
+        # Spawn mail client. Omit 'to_email' so user can manually type receivers.
+        mailto_url = f"mailto:?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(final_body)}"
+        webbrowser.open(mailto_url)
+            
+        return True, "Mail client spawned successfully"
     except Exception as e:
         return False, str(e)
+
 
 
 def generate_manager_report_html(analysis, predictions, anomalies, news_data):
@@ -967,14 +1213,174 @@ def api_what_if():
     return jsonify(run_what_if(analysis, scenario, news))
 
 
+# ═══════════════════════════════════════════════════
+# MODULE 9: STRATEGIC ADVISOR (AI-powered)
+# ═══════════════════════════════════════════════════
+def strategic_advisor(analysis, df):
+    """AI-powered strategic advisor — comprehensive business recommendations."""
+    pc = analysis.get("primary_cat", "Category")
+    pn = analysis.get("primary_num", "Value")
+    sn = analysis.get("secondary_num", "")
+    cat_stats = analysis.get("category_stats", {}).get(pc, {})
+    growth = analysis.get("growth_rates", {})
+    nc = analysis.get("numeric_cols", [])
+
+    # Run DSS modules for context
+    pareto = pareto_abc_analysis(analysis, df)
+    forecast = statistical_forecast(analysis, df)
+    dm = decision_matrix(analysis, df)
+    risk = risk_scoring(analysis, df)
+    hhi = concentration_index(analysis, df)
+    sensitivity = sensitivity_analysis(analysis, df)
+    period_comp = period_comparison(analysis, df)
+
+    # Build comprehensive context
+    pareto_summary = ""
+    for cat, t in pareto.get("tiers", {}).items():
+        pareto_summary += f"  - {cat}: Tier {t['tier']}, {t['pct']}% share, cumulative {t['cumulative_pct']}%\n"
+
+    risk_summary = ""
+    for r in risk.get("risks", []):
+        risk_summary += f"  - {r['category']}: Risk={r['risk_score']}/100 ({r['risk_level']}), CV={r['cv_pct']}%, Share={r['share_pct']}%\n"
+
+    dm_summary = ""
+    for m in dm.get("matrix", []):
+        dm_summary += f"  - #{m['rank']} {m['category']}: Score={m['weighted_total']}/100\n"
+
+    period_summary = ""
+    for c in period_comp.get("comparison", []):
+        period_summary += f"  - {c['category']}: P1=${c['period_1']:,.0f} → P2=${c['period_2']:,.0f} ({c['change_pct']:+.1f}%, {c['momentum']})\n"
+
+    forecast_summary = ""
+    if forecast.get("trend"):
+        forecast_summary = f"Trend: {forecast['trend']}, Slope: {forecast.get('slope',0)}"
+        for f in forecast.get("forecast", []):
+            forecast_summary += f", Next period: {f['value']} (CI: {f['lower']}–{f['upper']})"
+
+    sens_summary = ""
+    for s in sensitivity.get("sensitivities", []):
+        sens_summary += f"  - {s['category']}: Share={s['share_pct']}%, 10% impact=±${s['impact_of_10pct_change']:,.0f}, CV={s['volatility_cv']:.1f}%\n"
+
+    prompt = f"""You are a world-class strategic business advisor. Based on the comprehensive data analysis below, provide DETAILED, SPECIFIC, ACTIONABLE business intelligence.
+
+=== DATA OVERVIEW ===
+Dataset: {analysis['shape']['rows']} rows, {len(nc)} numeric columns
+Primary Category ({pc}): {', '.join(str(x) for x in list(analysis.get('category_values', {}).get(pc, [])))}
+Primary Metric ({pn}): Total = {analysis.get('kpi_total_1', 0):,.2f}
+{f"Secondary Metric ({sn}): Total = {analysis.get('kpi_total_2', 0):,.2f}" if sn else ""}
+Top {pc}: {analysis.get('kpi_top', 'N/A')}
+Bottom {pc}: {analysis.get('kpi_bottom', 'N/A')}
+
+=== PARETO / ABC TIERS ===
+{pareto_summary}
+
+=== DECISION MATRIX RANKING ===
+{dm_summary}
+
+=== RISK ASSESSMENT ===
+{risk_summary}
+HHI Concentration: {hhi.get('hhi', 0)} ({hhi.get('interpretation', '')})
+
+=== PERIOD COMPARISON ===
+{period_summary}
+
+=== FORECAST ===
+{forecast_summary}
+
+=== SENSITIVITY ===
+{sens_summary}
+
+=== INSTRUCTIONS ===
+Return ONLY a JSON object (no markdown, no code fences):
+{{
+  "immediate_actions": [
+    {{"priority": "HIGH/MEDIUM/LOW", "action": "specific action to take right now", "category": "which category/area", "expected_impact": "what will happen", "timeline": "when to do it"}}
+  ],
+  "sales_growth_strategies": [
+    {{"strategy": "specific strategy name", "description": "detailed description of how to increase sales", "target_categories": ["which categories"], "estimated_impact_pct": number, "effort_level": "low/medium/high", "timeline": "short-term/medium-term/long-term"}}
+  ],
+  "stock_recommendations": [
+    {{"category": "category name", "current_status": "overstocked/understocked/optimal/at_risk", "action": "increase/decrease/maintain/urgent_reorder", "quantity_change_pct": number, "reasoning": "why", "reorder_urgency": "immediate/soon/scheduled/not_needed", "reorder_timeline": "when to reorder"}}
+  ],
+  "gap_analysis": [
+    {{"area": "where we lag", "severity": "critical/moderate/minor", "current_state": "what's happening now", "desired_state": "where we should be", "action_plan": "how to close the gap", "affected_categories": ["categories"]}}
+  ],
+  "future_predictions": [
+    {{"timeframe": "next_month/next_quarter/next_year", "prediction": "what will happen", "confidence": 0-100, "risk_factors": "what could go wrong", "opportunity": "what to capitalize on"}}
+  ],
+  "current_status_summary": {{
+    "overall_health": "excellent/good/moderate/concerning/critical",
+    "health_score": 0-100,
+    "top_strength": "biggest strength",
+    "top_weakness": "biggest weakness",
+    "key_metric_status": "above_target/on_target/below_target",
+    "diversification_status": "well_diversified/moderately_concentrated/highly_concentrated"
+  }}
+}}"""
+
+    try:
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.7,
+                "response_format": {"type": "json_object"}
+            },
+            timeout=30
+        )
+        data = resp.json()
+        if "choices" not in data or len(data["choices"]) == 0:
+            raise Exception(data.get("error", {}).get("message", "Unknown API Error"))
+        text = data["choices"][0]["message"]["content"].strip()
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return {"error": "AI response could not be parsed"}
+    except Exception as e:
+        return {"error": f"Strategic advisor failed: {e}"}
+
+
+@app.route("/api/strategic-advisor", methods=["POST"])
+def api_strategic_advisor():
+    """AI-powered strategic business advisor."""
+    filepath = os.path.join(UPLOAD_FOLDER, "current_data.csv")
+    if not os.path.exists(filepath):
+        filepath = "sales.csv"
+    if not os.path.exists(filepath):
+        return jsonify({"error": "No CSV file found"}), 404
+    analysis, df = analyze_csv(filepath)
+    return jsonify(strategic_advisor(analysis, df))
+
+
+@app.route("/api/dss-analysis", methods=["POST"])
+def api_dss_analysis():
+    """Full DSS analysis — Pareto, Forecast, Decision Matrix, Risk, HHI, Sensitivity, Period Comparison."""
+    filepath = os.path.join(UPLOAD_FOLDER, "current_data.csv")
+    if not os.path.exists(filepath):
+        filepath = "sales.csv"
+    if not os.path.exists(filepath):
+        return jsonify({"error": "No CSV file found"}), 404
+    analysis, df = analyze_csv(filepath)
+    return jsonify({
+        "pareto": pareto_abc_analysis(analysis, df),
+        "forecast": statistical_forecast(analysis, df),
+        "decision_matrix": decision_matrix(analysis, df),
+        "risk": risk_scoring(analysis, df),
+        "concentration": concentration_index(analysis, df),
+        "sensitivity": sensitivity_analysis(analysis, df),
+        "period_comparison": period_comparison(analysis, df),
+    })
+
+
 @app.route("/api/run-pipeline", methods=["POST"])
 def api_run_pipeline():
     """Full agentic pipeline — 7 autonomous steps."""
     global pipeline_state
     pipeline_state = {
-        "status": "running", "steps": [], "current_step": 0, "total_steps": 7,
+        "status": "running", "steps": [], "current_step": 0, "total_steps": 8,
         "data": None, "charts": None, "news": None, "predictions": None,
-        "anomalies": None, "report_sent": False, "supplier_alerted": False,
+        "anomalies": None, "dss": None, "report_sent": False, "supplier_alerted": False,
         "last_run": datetime.now().isoformat(),
     }
 
@@ -1039,6 +1445,25 @@ def api_run_pipeline():
             pipeline_state["steps"][-1].update({"status": "completed", "result": f"Sent {len(sr)} alerts"})
         except Exception as e:
             pipeline_state["steps"][-1].update({"status": "warning", "result": f"Alert error: {e}"})
+
+        # ── Step 8: DSS Analysis ──
+        pipeline_state["steps"].append({"step": 8, "name": "DSS Analytics Engine", "status": "running", "icon": "🎯"})
+        pipeline_state["current_step"] = 8
+        try:
+            dss = {
+                "pareto": pareto_abc_analysis(analysis, df),
+                "forecast": statistical_forecast(analysis, df),
+                "decision_matrix": decision_matrix(analysis, df),
+                "risk": risk_scoring(analysis, df),
+                "concentration": concentration_index(analysis, df),
+                "sensitivity": sensitivity_analysis(analysis, df),
+                "period_comparison": period_comparison(analysis, df),
+            }
+            pipeline_state["dss"] = dss
+            n_risks = len([r for r in dss.get('risk', {}).get('risks', []) if r['risk_level'] != 'LOW'])
+            pipeline_state["steps"][-1].update({"status": "completed", "result": f"7 DSS modules · {n_risks} risks flagged · HHI {dss.get('concentration',{}).get('hhi',0)}"})
+        except Exception as e:
+            pipeline_state["steps"][-1].update({"status": "warning", "result": f"DSS error: {e}"})
 
         pipeline_state["status"] = "completed"
         return jsonify(pipeline_state)
