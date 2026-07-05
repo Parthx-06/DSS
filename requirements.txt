@@ -5,3 +5,4 @@ google-genai
 requests
 pypdf
 reportlab
+gunicorn
